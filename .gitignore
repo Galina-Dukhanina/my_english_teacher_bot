@@ -1,0 +1,23 @@
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+venv/
+env/
+.venv/
+
+# База данных (локальная)
+*.db
+*.sqlite
+*.sqlite3
+
+# Логи
+*.log
+
+# VS Code / системное
+.vscode/
+.DS_Store
+Thumbs.db
