@@ -17,7 +17,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding
+from bot.handlers import onboarding, commands
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -43,6 +43,21 @@ def main():
         CallbackQueryHandler(
             onboarding.handle_onboarding_button,
             pattern=r"^(terms|level|goal|style|timezone|time):",
+        )
+    )
+
+    # Команды
+    app.add_handler(CommandHandler("help", commands.help_command))
+    app.add_handler(CommandHandler("style", commands.style_command))
+    app.add_handler(CommandHandler("reminders", commands.reminders_command))
+
+    # Кнопки команд (вне онбординга)
+    app.add_handler(
+        CallbackQueryHandler(commands.handle_style_button, pattern=r"^setstyle:")
+    )
+    app.add_handler(
+        CallbackQueryHandler(
+            commands.handle_reminders_button, pattern=r"^(rem|remtime):"
         )
     )
 
