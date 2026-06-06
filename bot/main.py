@@ -14,10 +14,17 @@ for var in [
     os.environ.pop(var, None)
 
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    filters,
+    ContextTypes,
+)
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands
+from bot.handlers import onboarding, commands, dialog
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -58,6 +65,15 @@ def main():
     app.add_handler(
         CallbackQueryHandler(
             commands.handle_reminders_button, pattern=r"^(rem|remtime):"
+        )
+    )
+
+    # Основной диалог — ловит любой текст, который НЕ команда.
+    # Должен идти ПОСЛЕДНИМ, чтобы не перехватывать команды.
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            dialog.handle_message,
         )
     )
 
