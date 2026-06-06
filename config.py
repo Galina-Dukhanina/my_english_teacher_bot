@@ -11,6 +11,7 @@ MODEL_DIALOG = os.getenv("MODEL_DIALOG")
 MODEL_ANALYSIS = os.getenv("MODEL_ANALYSIS")
 DAILY_COST_LIMIT_USD = float(os.getenv("DAILY_COST_LIMIT_USD", "1.0"))
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID", "0"))
+PROXY_URL = os.getenv("PROXY_URL")
 
 # Проверка: без токена бот не запустится
 if not BOT_TOKEN:

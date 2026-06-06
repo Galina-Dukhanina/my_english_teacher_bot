@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     terms_accepted   INTEGER DEFAULT 0,
     terms_accepted_at TEXT,
     onboarding_done  INTEGER DEFAULT 0,
+    onboarding_step  TEXT DEFAULT 'start',
     created_at       TEXT DEFAULT (datetime('now'))
 );
 
