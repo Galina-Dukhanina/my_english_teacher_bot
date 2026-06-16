@@ -51,4 +51,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     memory.add_message(user_id, "assistant", answer)
     log_event(user_id, "dialog")
 
-    await update.message.reply_text(answer)
+    # Пробуем отправить с Markdown-форматированием.
+    # Если модель вставила кривую разметку и Telegram ругается —
+    # отправляем обычным текстом, чтобы сообщение точно дошло.
+    try:
+        await update.message.reply_text(answer, parse_mode="Markdown")
+    except Exception as e:
+        logger.warning(f"Markdown не распарсился, отправляю как обычный текст: {e}")
+        await update.message.reply_text(answer)
