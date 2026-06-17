@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS users (
     terms_accepted_at TEXT,
     onboarding_done  INTEGER DEFAULT 0,
     onboarding_step  TEXT DEFAULT 'start',
+    pending_action   TEXT DEFAULT NULL,
+    explanation_language TEXT DEFAULT 'auto',
+    current_activity TEXT DEFAULT NULL,
+    last_menu_date   TEXT DEFAULT NULL,
     created_at       TEXT DEFAULT (datetime('now'))
 );
 

@@ -123,4 +123,9 @@ async def handle_onboarding_button(update: Update, context: ContextTypes.DEFAULT
         await query.edit_message_text(
             f"{texts.ASK_TIME}\n\n✅ {texts.BTN_TIMES[value]}"
         )
-        await query.message.reply_text(texts.ONBOARDING_DONE)
+        from bot.keyboards import main_keyboard
+
+        await query.message.reply_text(
+            texts.ONBOARDING_DONE,
+            reply_markup=main_keyboard(),
+        )

@@ -89,3 +89,81 @@ def save_feedback(user_id, message):
     )
     conn.commit()
     conn.close()
+
+
+# ---------- Состояние ожидания (для кнопок-инструментов) ----------
+
+
+def set_pending_action(user_id, action):
+    """Установить, что бот ждет от пользователя (или None — ничего не ждет)."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET pending_action = ? WHERE user_id = ?",
+        (action, user_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_pending_action(user_id):
+    """Узнать, что бот сейчас ждет от пользователя."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT pending_action FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    return row["pending_action"] if row else None
+
+
+# ---------- Активность (режимы: поговорить / слова / грамматика) ----------
+
+
+def set_activity(user_id, activity):
+    """Установить активный режим (talk / words / grammar / None)."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET current_activity = ? WHERE user_id = ?",
+        (activity, user_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_activity(user_id):
+    """Узнать текущий активный режим пользователя."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT current_activity FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    return row["current_activity"] if row else None
+
+
+def should_show_menu(user_id) -> bool:
+    """Нужно ли показать меню при заходе.
+    True, если сегодня меню еще не показывали (первое сообщение за день)."""
+    from datetime import date
+
+    today = date.today().isoformat()
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT last_menu_date FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return False
+    return row["last_menu_date"] != today
+
+
+def mark_menu_shown(user_id):
+    """Отметить, что меню показано сегодня (чтобы не показывать повторно за день)."""
+    from datetime import date
+
+    today = date.today().isoformat()
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET last_menu_date = ? WHERE user_id = ?",
+        (today, user_id),
+    )
+    conn.commit()
+    conn.close()

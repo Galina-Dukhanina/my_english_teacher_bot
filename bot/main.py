@@ -24,7 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog
+from bot.handlers import onboarding, commands, dialog, activities
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -66,6 +66,20 @@ def main():
         CallbackQueryHandler(
             commands.handle_reminders_button, pattern=r"^(rem|remtime):"
         )
+    )
+    # Меню активностей (выбор режима и темы)
+
+    app.add_handler(
+        CallbackQueryHandler(activities.handle_activity_button, pattern=r"^activity:")
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(activities.handle_topic_button, pattern=r"^topic:")
+    )
+
+    # Кнопка выбора языка объяснений (inline-кнопки)
+    app.add_handler(
+        CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
     )
 
     # Основной диалог — ловит любой текст, который НЕ команда.
