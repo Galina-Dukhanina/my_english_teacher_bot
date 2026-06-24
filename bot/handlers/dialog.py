@@ -10,7 +10,10 @@ from database.db import (
     set_pending_action,
     get_pending_action,
     update_user,
+    should_show_menu,
+    mark_menu_shown,
 )
+
 from bot import memory, prompts, texts, keyboards
 from bot.handlers import activities
 from bot.services.ai import get_ai_response
@@ -44,6 +47,30 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Давай сначала настроим все под тебя. Нажми /start"
         )
         return
+
+    # --- Нажата кнопка? (одно определение на оба случая) ---
+    is_button = text in (
+        texts.BTN_MENU,
+        texts.BTN_PRONOUNCE,
+        texts.BTN_MEANING,
+        texts.BTN_LANG,
+    )
+
+    # --- Авто-показ меню при первом сообщении за день ---
+    # Не показываем, если: это кнопка, бот чего-то ждет, ИЛИ пользователь уже в режиме.
+    if (
+        not is_button
+        and not get_pending_action(user_id)
+        and not user["current_activity"]
+        and should_show_menu(user_id)
+    ):
+        mark_menu_shown(user_id)
+        await activities.show_activity_menu(update, context)
+        return
+
+    # --- Нажата кнопка? Сбрасываем зависшее ожидание ---
+    if is_button:
+        set_pending_action(user_id, None)  # выход из любого ожидания
 
     # --- Нажата кнопка-инструмент? ---
     if text == texts.BTN_MENU:
@@ -84,6 +111,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if pending == "wait_topic":
+        set_pending_action(user_id, None)
+        from database.db import set_activity, set_topic
+
+        set_activity(user_id, "talk")
+        set_topic(user_id, text)
+        await update.message.reply_text(
+            f"Отлично, говорим про «{text}». Начинай — напиши что-нибудь по-английски.",
+            reply_markup=keyboards.main_keyboard(),
+        )
+        return
+
     # --- Обычный диалог ---
     await _send_ai_reply(update, context, user_id, user, user_text=text)
 
@@ -97,6 +136,7 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
         style=user["style"],
         level=user["level"] or "unknown",
         explanation_language=user["explanation_language"],
+        topic=user["current_topic"],
     )
 
     if special:

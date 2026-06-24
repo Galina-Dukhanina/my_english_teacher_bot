@@ -86,17 +86,26 @@ AUTO_LANGUAGE_BY_LEVEL = {
 
 
 def build_system_prompt(
-    style: str, level: str, explanation_language: str = "auto"
+    style: str, level: str, explanation_language: str = "auto", topic: str = None
 ) -> str:
-    """Собрать полный системный промпт из блоков под конкретного пользователя."""
+    """Собрать полный системный промпт под пользователя."""
     style_block = STYLE_PROMPTS.get(style, STYLE_PROMPTS["friendly"])
     level_block = LEVEL_PROMPTS.get(level, LEVEL_PROMPTS["unknown"])
 
-    # Определяем язык объяснений: если "auto" — берем по уровню
     if explanation_language == "auto":
         lang = AUTO_LANGUAGE_BY_LEVEL.get(level, "ru")
     else:
         lang = explanation_language
     lang_block = LANGUAGE_PROMPTS.get(lang, LANGUAGE_PROMPTS["ru"])
 
-    return f"{BASE_PROMPT}\n\n{style_block}\n\n{level_block}\n\n{lang_block}"
+    prompt = f"{BASE_PROMPT}\n\n{style_block}\n\n{level_block}\n\n{lang_block}"
+
+    # Если идет разговор по теме — добавляем инструкцию
+    if topic:
+        prompt += (
+            f"\n\nТЕМА РАЗГОВОРА: сейчас вы общаетесь на тему «{topic}». "
+            f"Веди беседу вокруг этой темы, задавай вопросы по ней. "
+            f"НО если пользователь спросит о другом (грамматика, слово, перевод) — "
+            f"сначала помоги с его вопросом, потом мягко вернись к теме «{topic}»."
+        )
+    return prompt

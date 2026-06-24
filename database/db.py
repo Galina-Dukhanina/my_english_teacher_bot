@@ -167,3 +167,13 @@ def mark_menu_shown(user_id):
     )
     conn.commit()
     conn.close()
+
+
+def set_topic(user_id, topic):
+    """Установить тему разговора (или None)."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET current_topic = ? WHERE user_id = ?", (topic, user_id)
+    )
+    conn.commit()
+    conn.close()

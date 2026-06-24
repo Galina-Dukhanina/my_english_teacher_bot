@@ -64,19 +64,17 @@ async def handle_topic_button(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = query.from_user.id
     _, topic = query.data.split(":", 1)
 
+    from database.db import set_topic, set_activity, set_pending_action
+
     if topic == "free":
-        # Своя тема — ждем, пока пользователь напишет
         set_pending_action(user_id, "wait_topic")
         await query.edit_message_text(texts.ASK_FREE_TOPIC)
         return
 
-    # Запускаем разговор по выбранной теме
     topic_name = texts.TALK_TOPICS[topic]
+    set_activity(user_id, "talk")
+    set_topic(user_id, topic_name)
     await query.edit_message_text(f"Тема: {topic_name}")
-    # Сообщаем диалогу, что мы в режиме разговора по теме —
-    # стартовую реплику сгенерирует AI при следующем сообщении.
-    # Отправим приглашение начать.
     await query.message.reply_text(
-        f"Давай поговорим про «{topic_name}». Начинай — напиши что-нибудь по-английски, "
-        f"а я поддержу разговор и помогу с ошибками."
+        f"Давай поговорим про «{topic_name}». Начинай — напиши что-нибудь по-английски."
     )

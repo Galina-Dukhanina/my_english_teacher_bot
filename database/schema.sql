@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     pending_action   TEXT DEFAULT NULL,
     explanation_language TEXT DEFAULT 'auto',
     current_activity TEXT DEFAULT NULL,
+    current_topic    TEXT DEFAULT NULL,
     last_menu_date   TEXT DEFAULT NULL,
     created_at       TEXT DEFAULT (datetime('now'))
 );
