@@ -35,6 +35,9 @@ logger = logging.getLogger(__name__)
 
 def main():
     init_db()
+    from database.db import migrate_db
+
+    migrate_db()
     logger.info("База данных готова")
 
     # Создаём приложение, при необходимости через прокси

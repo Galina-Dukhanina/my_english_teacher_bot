@@ -24,6 +24,57 @@ def init_db():
     conn.close()
 
 
+def migrate_db():
+    """Добавить недостающие колонки в существующие таблицы, не теряя данные.
+    Безопасно вызывать при каждом запуске."""
+    # Какие колонки должны быть в каждой таблице (имя: SQL-определение)
+    expected_columns = {
+        "users": {
+            "username": "TEXT",
+            "first_name": "TEXT",
+            "level": "TEXT",
+            "goal": "TEXT",
+            "style": "TEXT DEFAULT 'friendly'",
+            "daily_minutes": "INTEGER DEFAULT 15",
+            "timezone": "TEXT DEFAULT 'Europe/Moscow'",
+            "reminder_enabled": "INTEGER DEFAULT 1",
+            "reminder_time": "TEXT DEFAULT '19:00'",
+            "is_premium": "INTEGER DEFAULT 0",
+            "premium_until": "TEXT",
+            "terms_accepted": "INTEGER DEFAULT 0",
+            "terms_accepted_at": "TEXT",
+            "onboarding_done": "INTEGER DEFAULT 0",
+            "onboarding_step": "TEXT DEFAULT 'start'",
+            "pending_action": "TEXT",
+            "explanation_language": "TEXT DEFAULT 'auto'",
+            "current_activity": "TEXT",
+            "current_topic": "TEXT",
+            "last_menu_date": "TEXT",
+        },
+        "vocabulary": {
+            "transcription": "TEXT",
+            "topic": "TEXT",
+        },
+    }
+
+    conn = get_connection()
+    for table, columns in expected_columns.items():
+        # Получаем список существующих колонок таблицы
+        existing = conn.execute(f"PRAGMA table_info({table})").fetchall()
+        existing_names = {row["name"] for row in existing}
+
+        # Добавляем те, которых нет
+        for col_name, col_def in columns.items():
+            if col_name not in existing_names:
+                try:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_def}")
+                    print(f"Миграция: добавлена колонка {table}.{col_name}")
+                except Exception as e:
+                    print(f"Миграция: не удалось добавить {table}.{col_name}: {e}")
+    conn.commit()
+    conn.close()
+
+
 # ---------- Пользователи ----------
 
 
