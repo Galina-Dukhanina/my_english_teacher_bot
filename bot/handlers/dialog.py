@@ -123,6 +123,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if pending == "wait_words_topic":
+        set_pending_action(user_id, None)
+        from bot.handlers.cards import start_words_with_topic
+
+        await start_words_with_topic(update, context, user_id, text)
+        return
+
     # --- Обычный диалог ---
     await _send_ai_reply(update, context, user_id, user, user_text=text)
 

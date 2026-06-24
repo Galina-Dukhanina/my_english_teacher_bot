@@ -1,5 +1,6 @@
 import logging
 import httpx
+import json
 from openai import OpenAI
 from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, MODEL_DIALOG, PROXY_URL
 
@@ -66,3 +67,56 @@ def get_ai_response(system_prompt: str, history: list) -> tuple[str, dict]:
         # не роняем бота, отдаем мягкую заглушку
         logger.error(f"Ошибка запроса к AI: {e}")
         return FALLBACK_MESSAGE, {}
+
+
+def generate_word_set(topic: str, level: str, count: int = 10) -> list:
+    """Сгенерировать набор слов по теме под уровень.
+    Возвращает список словарей с word, translation, transcription, example, options.
+    options — 3 неправильных перевода для режима 'варианты ответа'."""
+
+    level_hint = {
+        "beginner": "простые, базовые слова",
+        "intermediate": "слова среднего уровня",
+        "advanced": "продвинутые слова, включая идиомы",
+        "unknown": "слова разного уровня",
+    }.get(level, "слова разного уровня")
+
+    system = "Ты генератор учебных карточек для изучения английского. Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
+
+    user = f"""Сгенерируй {count} английских слов по теме «{topic}» ({level_hint}).
+Для каждого слова дай: само слово, перевод на русский, транскрипцию (IPA и русскими буквами в скобках), короткий пример предложения, и 3 НЕПРАВИЛЬНЫХ перевода (похожие, но другие слова) для теста.
+
+Формат ответа — массив JSON:
+[
+  {{"word": "travel", "translation": "путешествовать", "transcription": "[ˈtrævl] (трэвл)", "example": "I love to travel.", "options": ["работать", "отдыхать", "лететь"]}},
+  ...
+]
+Только JSON, ничего больше."""
+
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_DIALOG,
+            messages=messages,
+            max_tokens=2000,
+            temperature=0.7,
+        )
+        text = response.choices[0].message.content.strip()
+
+        # Убираем возможные markdown-обертки ```json ... ```
+        text = text.replace("```json", "").replace("```", "").strip()
+
+        words = json.loads(text)
+        logger.info(f"Сгенерировано слов: {len(words)} по теме '{topic}'")
+        return words
+
+    except json.JSONDecodeError as e:
+        logger.error(f"AI вернул невалидный JSON для слов: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Ошибка генерации слов: {e}")
+        return []

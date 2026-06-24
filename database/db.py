@@ -177,3 +177,74 @@ def set_topic(user_id, topic):
     )
     conn.commit()
     conn.close()
+
+
+# ---------- Карточки слов ----------
+
+
+def add_words_batch(user_id, words, topic):
+    """Сохранить набор слов в словарь.
+    words — список словарей [{"word":..., "translation":..., "transcription":..., "example":...}]"""
+    conn = get_connection()
+    for w in words:
+        conn.execute(
+            """INSERT INTO vocabulary (user_id, word, translation, transcription, example, topic)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                user_id,
+                w.get("word"),
+                w.get("translation"),
+                w.get("transcription"),
+                w.get("example"),
+                topic,
+            ),
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_recent_words(user_id, limit=10):
+    """Получить последние добавленные слова пользователя (для текущей сессии)."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT * FROM vocabulary WHERE user_id = ?
+           ORDER BY id DESC LIMIT ?""",
+        (user_id, limit),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def mark_word_result(word_id, knew_it):
+    """Отметить результат по слову: знал (True) или нет (False).
+    Увеличивает счетчик повторений, обновляет статус 'выучено'."""
+    conn = get_connection()
+    if knew_it:
+        conn.execute(
+            """UPDATE vocabulary
+               SET times_reviewed = times_reviewed + 1,
+                   mastered = CASE WHEN times_reviewed + 1 >= 3 THEN 1 ELSE 0 END
+               WHERE id = ?""",
+            (word_id,),
+        )
+    else:
+        # Не знал — сбрасываем "выучено", счетчик не растим
+        conn.execute(
+            "UPDATE vocabulary SET mastered = 0 WHERE id = ?",
+            (word_id,),
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_vocab_stats(user_id):
+    """Статистика словаря: сколько всего слов и сколько выучено."""
+    conn = get_connection()
+    row = conn.execute(
+        """SELECT COUNT(*) as total,
+                  SUM(CASE WHEN mastered = 1 THEN 1 ELSE 0 END) as learned
+           FROM vocabulary WHERE user_id = ?""",
+        (user_id,),
+    ).fetchone()
+    conn.close()
+    return {"total": row["total"] or 0, "learned": row["learned"] or 0}
