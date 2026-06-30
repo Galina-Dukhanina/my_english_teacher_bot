@@ -11,6 +11,9 @@ from database.db import (
     log_event,
     add_words_batch,
     get_vocab_stats,
+    get_words_to_review,
+    review_word_result,
+    count_words_to_review,
 )
 from bot import texts, keyboards
 from bot.services.ai import generate_word_set
@@ -188,13 +191,25 @@ async def handle_card_answer(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
     card = words[index]
     knew = value == "1"
+    mode = session.get("mode", "learn")
 
-    # Если НЕ знал — сохраняем слово в словарь для повторения
-    if not knew:
-        add_words_batch(user_id, [card], session.get("topic", ""))
-        session["to_review"] = session.get("to_review", 0) + 1
+    if mode == "review":
+        # Режим повторения: обновляем статус слова в словаре
+        word_id = card.get("id")
+        if word_id:
+            review_word_result(word_id, knew)
+        if knew:
+            session["knew"] += 1
+            # Проверим, освоено ли слово теперь (3 верных подряд)
+            if card.get("times_reviewed", 0) + 1 >= 3:
+                session["mastered_now"] = session.get("mastered_now", 0) + 1
     else:
-        session["knew"] += 1
+        # Режим изучения: не знал — сохраняем слово в словарь
+        if not knew:
+            add_words_batch(user_id, [card], session.get("topic", ""))
+            session["to_review"] = session.get("to_review", 0) + 1
+        else:
+            session["knew"] += 1
 
     # Для формата "варианты" показываем результат
     if action == "wans":
@@ -223,15 +238,21 @@ async def _finish_session(message, user_id):
     session = _card_sessions.get(user_id, {})
     total = len(session.get("words", []))
     knew = session.get("knew", 0)
-    to_review = session.get("to_review", 0)
+    mode = session.get("mode", "learn")
 
     _card_sessions.pop(user_id, None)
     set_activity(user_id, None)
 
-    await message.reply_text(
-        texts.WORDS_SESSION_DONE.format(total=total, knew=knew, to_review=to_review),
-        reply_markup=keyboards.main_keyboard(),
-    )
+    if mode == "review":
+        mastered = session.get("mastered_now", 0)
+        text = texts.REVIEW_DONE.format(total=total, knew=knew, mastered=mastered)
+    else:
+        to_review = session.get("to_review", 0)
+        text = texts.WORDS_SESSION_DONE.format(
+            total=total, knew=knew, to_review=to_review
+        )
+
+    await message.reply_text(text, reply_markup=keyboards.main_keyboard())
 
 
 async def start_words_with_topic(update, context, user_id, topic_name):
@@ -257,3 +278,34 @@ async def handle_card_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception:
         pass
     await _finish_session(query.message, user_id)
+
+
+async def start_review(source, context: ContextTypes.DEFAULT_TYPE, user_id: int):
+    """Запуск повторения слов из словаря (неосвоенные)."""
+    message = source.message if hasattr(source, "message") else source
+
+    words = get_words_to_review(user_id, limit=10)
+    if not words:
+        await message.reply_text(
+            texts.REVIEW_NO_WORDS, reply_markup=keyboards.main_keyboard()
+        )
+        return
+
+    set_activity(user_id, "review")
+    log_event(user_id, "review_session")
+
+    # Готовим сессию. Формат повторения — всегда "варианты" (быстрее и проще).
+    # Слова уже содержат word, translation, transcription. options может не быть —
+    # сгенерируем простые заглушки или используем самопроверку.
+    session = {
+        "mode": "review",
+        "words": words,
+        "index": 0,
+        "knew": 0,
+        "mastered_now": 0,
+        "format": "timer",  # для повторения используем самопроверку
+    }
+    _card_sessions[user_id] = session
+
+    await message.reply_text(texts.REVIEW_START.format(count=len(words)))
+    await _show_card(message, context, user_id)

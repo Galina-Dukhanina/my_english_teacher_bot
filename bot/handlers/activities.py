@@ -53,6 +53,12 @@ async def handle_activity_button(update: Update, context: ContextTypes.DEFAULT_T
         await query.edit_message_text("Учим слова!")
         await start_words(query, context, user_id)
 
+    elif activity == "review":
+        from bot.handlers.cards import start_review
+
+        await query.edit_message_text("Повторяем слова!")
+        await start_review(query, context, user_id)
+
     elif activity == "grammar":
         # Заглушка — режим будет в Этапе 4
         set_activity(user_id, None)

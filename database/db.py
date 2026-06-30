@@ -299,3 +299,67 @@ def get_vocab_stats(user_id):
     ).fetchone()
     conn.close()
     return {"total": row["total"] or 0, "learned": row["learned"] or 0}
+
+
+# ---------- Повторение слов ----------
+
+
+def get_words_to_review(user_id, limit=10):
+    """Получить неосвоенные слова для повторения (mastered=0).
+    Сначала те, что давно не повторяли."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT * FROM vocabulary
+           WHERE user_id = ? AND mastered = 0
+           ORDER BY times_reviewed ASC, id ASC
+           LIMIT ?""",
+        (user_id, limit),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def review_word_result(word_id, knew_it):
+    """Отметить результат повторения слова.
+    Знал — растим счетчик, после 3 раз слово освоено.
+    Не знал — сбрасываем счетчик."""
+    conn = get_connection()
+    if knew_it:
+        conn.execute(
+            """UPDATE vocabulary
+               SET times_reviewed = times_reviewed + 1,
+                   mastered = CASE WHEN times_reviewed + 1 >= 3 THEN 1 ELSE 0 END
+               WHERE id = ?""",
+            (word_id,),
+        )
+    else:
+        conn.execute(
+            "UPDATE vocabulary SET times_reviewed = 0, mastered = 0 WHERE id = ?",
+            (word_id,),
+        )
+    conn.commit()
+    conn.close()
+
+
+def count_words_to_review(user_id):
+    """Сколько неосвоенных слов ждет повторения."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT COUNT(*) as cnt FROM vocabulary WHERE user_id = ? AND mastered = 0",
+        (user_id,),
+    ).fetchone()
+    conn.close()
+    return row["cnt"] or 0
+
+
+def get_all_words(user_id):
+    """Все слова пользователя для просмотра словаря."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT word, translation, transcription, mastered, times_reviewed
+           FROM vocabulary WHERE user_id = ?
+           ORDER BY mastered ASC, id DESC""",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
