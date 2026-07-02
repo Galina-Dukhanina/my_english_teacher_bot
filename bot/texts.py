@@ -221,9 +221,22 @@ GRAMMAR_EXPLAINING = "Готовлю объяснение по теме «{topic
 GRAMMAR_AFTER_EXPLANATION = "Что дальше?"
 BTN_GRAMMAR_ANOTHER = "Другая тема"
 BTN_GRAMMAR_EXERCISE = "Упражнения"
-BTN_GRAMMAR_EXIT = "Закончить"
+BTN_GRAMMAR_EXIT = "⏹ Закончить"
 GRAMMAR_EXERCISE_SOON = (
     "Упражнения по теме скоро появятся! Пока можешь выбрать другую тему "
     "или задать вопрос по грамматике в чате."
 )
 GRAMMAR_EXIT = "Хорошо! Возвращайся, когда захочешь разобрать грамматику."
+
+# --- Упражнения по грамматике ---
+GRAMMAR_EX_GENERATING = "Готовлю упражнения по теме «{topic}»..."
+GRAMMAR_EX_ERROR = "Не получилось создать упражнения. Попробуй другую тему."
+GRAMMAR_EX_INTRO = "Упражнения по теме «{topic}». Выбери правильный вариант.\n\nЗадание {num} из {total}:"
+GRAMMAR_EX_CORRECT = "✅ Верно!\n\n{explanation}"
+GRAMMAR_EX_WRONG = "❌ Правильный ответ: {correct}\n\n{explanation}"
+GRAMMAR_EX_DONE = "🎉 Упражнения завершены!\n\nВерно: {correct} из {total}"
+
+BTN_GRAMMAR_REPEAT = "Повторить тему"
+# BTN_GRAMMAR_ANOTHER и BTN_GRAMMAR_EXIT уже есть
+BTN_GRAMMAR_MENU = "⏹ Выход в меню"
+BTN_GRAMMAR_STOP = "⏹ Завершить упражнения"

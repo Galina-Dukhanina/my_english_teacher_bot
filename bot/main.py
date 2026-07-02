@@ -95,6 +95,15 @@ def main():
         CallbackQueryHandler(grammar.handle_grammar_topic, pattern=r"^gtopic:")
     )
     app.add_handler(CallbackQueryHandler(grammar.handle_grammar_nav, pattern=r"^gnav:"))
+    app.add_handler(
+        CallbackQueryHandler(grammar.handle_exercise_answer, pattern=r"^gex:")
+    )
+    app.add_handler(
+        CallbackQueryHandler(grammar.handle_grammar_reexplain, pattern=r"^greexplain:")
+    )
+    app.add_handler(
+        CallbackQueryHandler(grammar.handle_exercise_stop, pattern=r"^gexstop:")
+    )
 
     # Кнопка выбора языка объяснений (inline-кнопки)
     app.add_handler(

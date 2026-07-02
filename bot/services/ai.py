@@ -171,3 +171,51 @@ def explain_grammar_topic(topic: str, level: str, style: str, language: str) -> 
     except Exception as e:
         logger.error(f"Ошибка объяснения грамматики: {e}")
         return ""
+
+
+def generate_grammar_exercises(topic: str, level: str, count: int = 5) -> list:
+    """Сгенерировать упражнения по грамматической теме (multiple choice).
+    Возвращает список: [{"sentence":..., "options":[...], "correct":..., "explanation":...}]"""
+
+    level_hint = {
+        "beginner": "простые предложения, базовая лексика",
+        "intermediate": "предложения средней сложности",
+        "advanced": "сложные предложения, продвинутая лексика",
+        "unknown": "простые предложения",
+    }.get(level, "простые предложения")
+
+    system = "Ты генератор упражнений по английской грамматике. Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
+
+    user = f"""Создай {count} упражнений по теме «{topic}» ({level_hint}).
+Каждое упражнение — предложение с пропуском (___), 3-4 варианта ответа, правильный вариант, и краткое пояснение почему.
+
+Формат — массив JSON:
+[
+  {{"sentence": "She ___ a teacher.", "options": ["is", "are", "am"], "correct": "is", "explanation": "С she используется is."}},
+  ...
+]
+Только JSON, ничего больше."""
+
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_DIALOG,
+            messages=messages,
+            max_tokens=2000,
+            temperature=0.7,
+        )
+        text = response.choices[0].message.content.strip()
+        text = text.replace("```json", "").replace("```", "").strip()
+
+        import json
+
+        exercises = json.loads(text)
+        logger.info(f"Сгенерировано упражнений: {len(exercises)} по теме '{topic}'")
+        return exercises
+    except Exception as e:
+        logger.error(f"Ошибка генерации упражнений: {e}")
+        return []
