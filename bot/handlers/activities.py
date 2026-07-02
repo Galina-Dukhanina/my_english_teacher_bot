@@ -60,9 +60,10 @@ async def handle_activity_button(update: Update, context: ContextTypes.DEFAULT_T
         await start_review(query, context, user_id)
 
     elif activity == "grammar":
-        # Заглушка — режим будет в Этапе 4
-        set_activity(user_id, None)
-        await query.edit_message_text(texts.GRAMMAR_SOON)
+        from bot.handlers.grammar import start_grammar
+
+        await query.edit_message_text("Разбираем грамматику!")
+        await start_grammar(query, context, user_id)
 
 
 async def handle_topic_button(update: Update, context: ContextTypes.DEFAULT_TYPE):

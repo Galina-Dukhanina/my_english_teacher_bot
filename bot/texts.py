@@ -214,3 +214,16 @@ VOCAB_EMPTY = "Твой словарь пока пуст. Поучи слова 
 VOCAB_HEADER = "Твой словарь ({total} слов, освоено {mastered}):\n\n"
 VOCAB_LINE_LEARNING = "🔸 {word} — {translation}"
 VOCAB_LINE_MASTERED = "✅ {word} — {translation}"
+
+# --- Грамматика ---
+GRAMMAR_CHOOSE_TOPIC = "Выбери тему грамматики. Я объясню правило с примерами."
+GRAMMAR_EXPLAINING = "Готовлю объяснение по теме «{topic}»..."
+GRAMMAR_AFTER_EXPLANATION = "Что дальше?"
+BTN_GRAMMAR_ANOTHER = "Другая тема"
+BTN_GRAMMAR_EXERCISE = "Упражнения"
+BTN_GRAMMAR_EXIT = "Закончить"
+GRAMMAR_EXERCISE_SOON = (
+    "Упражнения по теме скоро появятся! Пока можешь выбрать другую тему "
+    "или задать вопрос по грамматике в чате."
+)
+GRAMMAR_EXIT = "Хорошо! Возвращайся, когда захочешь разобрать грамматику."

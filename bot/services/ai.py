@@ -120,3 +120,54 @@ def generate_word_set(topic: str, level: str, count: int = 10) -> list:
     except Exception as e:
         logger.error(f"Ошибка генерации слов: {e}")
         return []
+
+
+def explain_grammar_topic(topic: str, level: str, style: str, language: str) -> str:
+    """Сгенерировать объяснение грамматической темы под уровень/стиль/язык."""
+
+    lang_hint = {
+        "ru": "Объясняй на русском языке.",
+        "en": "Explain in simple English.",
+        "both": "Объясняй на русском, ключевые моменты дублируй на английском.",
+        "auto": "Объясняй на русском для начинающих, больше английского для продвинутых.",
+    }.get(language, "Объясняй на русском языке.")
+
+    level_hint = {
+        "beginner": "Ученик начинающий — объясняй очень просто, минимум терминов, больше примеров.",
+        "intermediate": "Ученик среднего уровня — можно термины с пояснениями.",
+        "advanced": "Ученик продвинутый — можно глубже, с нюансами.",
+        "unknown": "Уровень неизвестен — объясняй просто.",
+    }.get(level, "Объясняй просто.")
+
+    system = (
+        "Ты преподаватель английского. Объясняешь грамматику понятно и структурно. "
+        "Пиши ТОЛЬКО обычным текстом, без markdown, без звездочек и решеток. "
+        f"{lang_hint} {level_hint}"
+    )
+
+    user = f"""Объясни тему английской грамматики: «{topic}».
+
+Структура объяснения:
+1. Что это и зачем нужно (кратко)
+2. Как образуется (правило)
+3. Примеры (3-4 штуки с переводом)
+4. Типичные ошибки или важные моменты
+
+Будь понятным и не слишком длинным. Это чат, не учебник."""
+
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_DIALOG,
+            messages=messages,
+            max_tokens=1500,
+            temperature=0.7,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Ошибка объяснения грамматики: {e}")
+        return ""

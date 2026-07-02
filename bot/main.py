@@ -24,7 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -89,6 +89,17 @@ def main():
         CallbackQueryHandler(cards.handle_card_answer, pattern=r"^(wans|wself):")
     )
     app.add_handler(CallbackQueryHandler(cards.handle_card_stop, pattern=r"^wstop:"))
+
+    # Грамматика
+    app.add_handler(
+        CallbackQueryHandler(grammar.handle_grammar_topic, pattern=r"^gtopic:")
+    )
+    app.add_handler(CallbackQueryHandler(grammar.handle_grammar_nav, pattern=r"^gnav:"))
+
+    # Кнопка выбора языка объяснений (inline-кнопки)
+    app.add_handler(
+        CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
+    )
 
     # Кнопка выбора языка объяснений (inline-кнопки)
     app.add_handler(
