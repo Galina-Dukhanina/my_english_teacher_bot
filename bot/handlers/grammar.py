@@ -12,6 +12,11 @@ from bot.services.session_store import (
     clear_session,
 )
 from bot.services.progress import record_activity, ACTIVITY_GRAMMAR
+from bot.services.limits import (
+    check_and_consume,
+    ACTION_GRAMMAR_EXERCISE,
+    get_limit_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +140,15 @@ async def handle_grammar_nav(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def start_exercises(source, context, user_id, topic_code):
     """Запуск упражнений по теме."""
     message = source.message if hasattr(source, "message") else source
+
+    limit_result = check_and_consume(user_id, ACTION_GRAMMAR_EXERCISE)
+    if not limit_result.allowed:
+        await message.reply_text(
+            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            reply_markup=keyboards.premium_upsell_keyboard(),
+        )
+        return
+
     user = get_user(user_id)
     level = user["level"] or "unknown"
     topic_name = grammar_topics.get_topic_name(level, topic_code)

@@ -95,6 +95,26 @@ docker compose exec bot sh scripts/backup_db.sh
 | Команда | Кто | Описание |
 |---------|-----|----------|
 | `/stats` | `ADMIN_USER_ID` | DAU, воронка, расход AI, отзывы |
+| `/grant_premium` | `ADMIN_USER_ID` | Выдать Premium вручную (dev) |
+
+## Монетизация
+
+**Бесплатно (в день, по timezone пользователя):**
+- 15 сообщений / AI-запросов
+- 1 сессия «Учить слова»
+- 1 блок упражнений по грамматике
+
+**Premium:** без лимитов + слова из «Непонятно слово» сохраняются в словарь.
+
+```bash
+# Dev: ручная активация
+/grant_premium USER_ID 30
+
+# Prod: ЮKassa
+# PAYMENT_PROVIDER=yookassa в .env
+docker compose --profile yookassa up -d
+# Webhook URL: https://your-domain/webhook/yookassa
+```
 
 ## Чеклист перед бета-запуском
 
@@ -107,4 +127,4 @@ docker compose exec bot sh scripts/backup_db.sh
 
 ## Статус
 
-✅ MVP готов к бета-тесту (10–30 пользователей). Монетизация (ЮKassa) — следующий этап.
+✅ MVP готов к бета-тесту. Монетизация: лимиты + `/premium` + ЮKassa (webhook).

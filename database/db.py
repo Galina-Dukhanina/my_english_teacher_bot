@@ -62,6 +62,10 @@ def migrate_db():
             "transcription": "TEXT",
             "topic": "TEXT",
         },
+        "usage_limits": {
+            "words_sessions_used": "INTEGER DEFAULT 0",
+            "grammar_exercises_used": "INTEGER DEFAULT 0",
+        },
     }
 
     conn = get_connection()
@@ -439,6 +443,126 @@ def count_new_feedback():
     ).fetchone()
     conn.close()
     return row["cnt"] or 0
+
+
+# ---------- Дневные лимиты ----------
+
+
+def get_user_local_date(user_id) -> str:
+    """Сегодняшняя дата в timezone пользователя (YYYY-MM-DD)."""
+    import pytz
+    from datetime import datetime
+
+    user = get_user(user_id)
+    tz_name = (user or {}).get("timezone") or "Europe/Moscow"
+    tz = pytz.timezone(tz_name)
+    return datetime.now(tz).date().isoformat()
+
+
+def get_usage_limits(user_id, date_str):
+    """Получить или создать запись лимитов на дату."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT * FROM usage_limits WHERE user_id = ? AND date = ?",
+        (user_id, date_str),
+    ).fetchone()
+    if not row:
+        conn.execute(
+            "INSERT INTO usage_limits (user_id, date) VALUES (?, ?)",
+            (user_id, date_str),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM usage_limits WHERE user_id = ? AND date = ?",
+            (user_id, date_str),
+        ).fetchone()
+    conn.close()
+    return dict(row)
+
+
+def increment_usage(user_id, date_str, field: str, amount: int = 1):
+    """Увеличить счётчик usage_limits (field — имя колонки)."""
+    allowed = {
+        "messages_used",
+        "words_sessions_used",
+        "grammar_exercises_used",
+        "dialogs_used",
+    }
+    if field not in allowed:
+        raise ValueError(f"Unknown usage field: {field}")
+    get_usage_limits(user_id, date_str)
+    conn = get_connection()
+    conn.execute(
+        f"UPDATE usage_limits SET {field} = {field} + ? "
+        "WHERE user_id = ? AND date = ?",
+        (amount, user_id, date_str),
+    )
+    conn.commit()
+    conn.close()
+
+
+# ---------- Платежи и premium ----------
+
+
+def create_payment_record(user_id, provider, provider_payment_id, plan, amount):
+    """Создать запись платежа со статусом pending."""
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO payments
+           (user_id, provider, provider_payment_id, plan, amount, status)
+           VALUES (?, ?, ?, ?, ?, 'pending')""",
+        (user_id, provider, provider_payment_id, plan, amount),
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_payment_status(provider_payment_id, status, paid_at=None):
+    conn = get_connection()
+    if paid_at:
+        conn.execute(
+            """UPDATE payments SET status = ?, paid_at = ?
+               WHERE provider_payment_id = ?""",
+            (status, paid_at, provider_payment_id),
+        )
+    else:
+        conn.execute(
+            "UPDATE payments SET status = ? WHERE provider_payment_id = ?",
+            (status, provider_payment_id),
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_payment_by_provider_id(provider_payment_id):
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT * FROM payments WHERE provider_payment_id = ?",
+        (provider_payment_id,),
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def activate_premium(user_id, days: int):
+    """Активировать premium на N дней."""
+    from datetime import datetime, timedelta
+
+    until = (datetime.now() + timedelta(days=days)).isoformat(timespec="seconds")
+    update_user(user_id, is_premium=1, premium_until=until)
+
+
+def expire_premium_users():
+    """Снять premium у пользователей с истёкшим сроком."""
+    conn = get_connection()
+    conn.execute(
+        """UPDATE users SET is_premium = 0
+           WHERE is_premium = 1
+             AND premium_until IS NOT NULL
+             AND premium_until < datetime('now')"""
+    )
+    conn.commit()
+    conn.close()
 
 
 # ---------- Обратная связь ----------

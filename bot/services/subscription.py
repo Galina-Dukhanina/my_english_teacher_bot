@@ -1,8 +1,16 @@
-"""Статус подписки (задел под Этап 5 — монетизация)."""
+"""Статус подписки и активация premium."""
 
+import logging
 from datetime import datetime
 
-from database.db import get_user
+from database.db import (
+    get_user,
+    activate_premium as db_activate_premium,
+    update_payment_status,
+    get_payment_by_provider_id,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def is_premium(user_id: int) -> bool:
@@ -17,3 +25,43 @@ def is_premium(user_id: int) -> bool:
         return datetime.fromisoformat(until) > datetime.now()
     except ValueError:
         return bool(user.get("is_premium"))
+
+
+def grant_premium(user_id: int, days: int):
+    """Выдать premium на N дней (admin или webhook)."""
+    db_activate_premium(user_id, days)
+    logger.info(f"Premium активирован: user={user_id}, days={days}")
+
+
+def complete_payment(provider_payment_id: str, user_id: int, plan: str, days: int):
+    """Отметить платёж оплаченным и активировать premium."""
+    record = get_payment_by_provider_id(provider_payment_id)
+    if record and record.get("status") == "paid":
+        return
+
+    update_payment_status(
+        provider_payment_id,
+        "paid",
+        paid_at=datetime.now().isoformat(timespec="seconds"),
+    )
+    grant_premium(user_id, days)
+
+
+def save_word_from_meaning(user_id: int, word: str, explanation: str):
+    """Premium: сохранить слово из «Непонятно слово» в словарь."""
+    from database.db import add_words_batch, sync_progress_words
+
+    translation = explanation.strip().split("\n")[0][:200]
+    add_words_batch(
+        user_id,
+        [
+            {
+                "word": word.strip(),
+                "translation": translation or "—",
+                "transcription": "",
+                "example": "",
+            }
+        ],
+        "из диалога",
+    )
+    sync_progress_words(user_id)

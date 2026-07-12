@@ -8,5 +8,19 @@ services:
     volumes:
       - bot-data:/app/data
 
+  webhook:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_PATH: /app/data/bot_database.db
+    command: uvicorn bot.web.server:app --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - bot-data:/app/data
+    profiles:
+      - yookassa
+
 volumes:
   bot-data:

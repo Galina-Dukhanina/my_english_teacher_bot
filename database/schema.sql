@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS usage_limits (
     date          TEXT,
     dialogs_used  INTEGER DEFAULT 0,
     messages_used INTEGER DEFAULT 0,
+    words_sessions_used INTEGER DEFAULT 0,
+    grammar_exercises_used INTEGER DEFAULT 0,
     PRIMARY KEY (user_id, date),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );

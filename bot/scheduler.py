@@ -5,6 +5,7 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from bot.services.reminders import send_reminders
+from database.db import expire_premium_users
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,10 @@ async def _reminders_job(app):
     count = await send_reminders(app)
     if count:
         logger.info(f"Отправлено напоминаний: {count}")
+
+
+async def _expire_premium_job():
+    expire_premium_users()
 
 
 def start_scheduler(app):
@@ -30,6 +35,14 @@ def start_scheduler(app):
         minutes=1,
         args=[app],
         id="send_reminders",
+        replace_existing=True,
+    )
+    _scheduler.add_job(
+        _expire_premium_job,
+        "cron",
+        hour=3,
+        minute=0,
+        id="expire_premium",
         replace_existing=True,
     )
     _scheduler.start()

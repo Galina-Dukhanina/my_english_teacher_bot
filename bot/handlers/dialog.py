@@ -20,6 +20,8 @@ from config import ADMIN_USER_ID
 from bot.services.ai import get_ai_response, check_limit_alert_pending
 from bot.services.cost_control import LIMIT_EXCEEDED_MESSAGE
 from bot.services.progress import record_activity, ACTIVITY_DIALOG
+from bot.services.limits import check_and_consume, ACTION_MESSAGES, get_limit_message
+from bot.services.subscription import is_premium, save_word_from_meaning
 
 logger = logging.getLogger(__name__)
 
@@ -104,14 +106,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     if pending == "wait_meaning":
         set_pending_action(user_id, None)
-        await _send_ai_reply(
+        word = text.strip()
+        answer = await _send_ai_reply(
             update,
             context,
             user_id,
             user,
-            special=f"Объясни простыми словами, что значит '{text}', "
+            special=f"Объясни простыми словами, что значит '{word}', "
             f"и приведи пример употребления. Кратко.",
         )
+        if answer and answer != LIMIT_EXCEEDED_MESSAGE:
+            if is_premium(user_id):
+                save_word_from_meaning(user_id, word, answer)
+                await update.message.reply_text(texts.PREMIUM_WORD_SAVED)
+            else:
+                await update.message.reply_text(texts.PREMIUM_WORD_HINT)
         return
 
     if pending == "wait_topic":
@@ -146,7 +155,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def _send_ai_reply(update, context, user_id, user, user_text=None, special=None):
     """Общая функция: собрать промпт, позвать AI, отправить ответ.
     user_text — обычное сообщение пользователя (идет в историю).
-    special — служебная инструкция для инструментов (НЕ идет в общую историю)."""
+    special — служебная инструкция для инструментов (НЕ идет в общую историю).
+    Возвращает текст ответа (без markdown) или None."""
+    limit_result = check_and_consume(user_id, ACTION_MESSAGES)
+    if not limit_result.allowed:
+        await update.message.reply_text(
+            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            reply_markup=keyboards.premium_upsell_keyboard(),
+        )
+        return None
     # Собираем системный промпт с учетом языка объяснений
     system_prompt = prompts.build_system_prompt(
         style=user["style"],
@@ -190,6 +207,7 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
         clean_answer,
         reply_markup=keyboards.main_keyboard(),
     )
+    return clean_answer
 
 
 # ---------- Инструменты (вызываются кнопками) ----------

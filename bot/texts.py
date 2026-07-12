@@ -39,6 +39,7 @@ ONBOARDING_DONE = (
     "/style — сменить стиль общения\n"
     "/reminders — настроить напоминания\n"
     "/progress — мой прогресс\n"
+    "/premium — безлимитный доступ\n"
     "/feedback — оставить отзыв или предложение\n"
     "/help — что я умею"
 )
@@ -99,6 +100,7 @@ HELP = (
     "/style — сменить стиль объяснений\n"
     "/reminders — настроить напоминания о занятиях\n"
     "/progress — прогресс и серия дней\n"
+    "/premium — подписка без лимитов\n"
     "/feedback — оставить отзыв или предложение\n"
     "/help — это сообщение"
 )
@@ -271,3 +273,43 @@ REMINDER_STREAK = (
 )
 REMINDER_DISABLED = "Напоминания выключены. Включить снова: /reminders"
 BTN_REMINDER_OFF = "Отключить напоминания"
+
+# --- Лимиты и Premium ---
+LIMIT_MESSAGES = (
+    "На сегодня лимит сообщений исчерпан ({used}/{limit}). "
+    "Завтра счётчик обновится — или подключи Premium без ограничений."
+)
+LIMIT_WORDS = (
+    "Бесплатно доступна 1 сессия «Учить слова» в день ({used}/{limit}). "
+    "Premium — безлимитные карточки с AI."
+)
+LIMIT_GRAMMAR = (
+    "Бесплатно доступен 1 блок упражнений в день ({used}/{limit}). "
+    "Premium — безлимитная практика."
+)
+LIMIT_GENERIC = "Дневной лимит исчерпан ({used}/{limit})."
+
+PREMIUM_UPSELL = "⭐ Premium — безлимитный диалог, карточки и упражнения + слова из чата в словарь."
+PREMIUM_INTRO = (
+    "⭐ Premium\n\n"
+    "• Безлимитный диалог и AI-инструменты\n"
+    "• Сколько угодно сессий «Учить слова»\n"
+    "• Безлимитные упражнения по грамматике\n"
+    "• Слова из «Непонятно слово» сохраняются в словарь\n\n"
+    "Выбери тариф:"
+)
+PREMIUM_PLAN_MONTH = "Premium — 1 месяц"
+PREMIUM_PLAN_YEAR = "Premium — 1 год"
+PREMIUM_BTN_MONTH = "Месяц — {price} ₽"
+PREMIUM_BTN_YEAR = "Год — {price} ₽"
+PREMIUM_BTN_PAY = "💳 Оплатить"
+PREMIUM_PAY_LINK = "Оплата {plan} — {amount} ₽.\nНажми кнопку ниже:"
+PREMIUM_PAY_ERROR = "Не удалось создать платёж. Попробуй позже или напиши /feedback."
+PREMIUM_ACTIVE = "У тебя уже активен Premium до {until}."
+PREMIUM_ALREADY = "Premium уже активен."
+PREMIUM_GRANTED = "Premium выдан user {user_id} на {days} дн."
+PREMIUM_ACTIVATED_USER = "🎉 Premium активирован на {days} дней! Безлимитная практика открыта."
+PREMIUM_WORD_SAVED = "✅ Слово добавлено в словарь для повторения."
+PREMIUM_WORD_HINT = (
+    "\n\n💡 С Premium такие слова автоматически попадают в словарь. /premium"
+)

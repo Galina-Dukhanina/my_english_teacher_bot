@@ -24,7 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium
 from bot.middleware.error_handler import global_error_handler
 from bot.scheduler import start_scheduler, stop_scheduler
 from bot.services.reminders import handle_reminder_off
@@ -67,6 +67,8 @@ def main():
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
     app.add_handler(CommandHandler("progress", commands.progress_command))
     app.add_handler(CommandHandler("stats", commands.stats_command))
+    app.add_handler(CommandHandler("premium", premium.premium_command))
+    app.add_handler(CommandHandler("grant_premium", premium.grant_premium_command))
 
     # Кнопки команд (вне онбординга)
     app.add_handler(
@@ -79,6 +81,9 @@ def main():
     )
     app.add_handler(
         CallbackQueryHandler(handle_reminder_off, pattern=r"^reminder:off$")
+    )
+    app.add_handler(
+        CallbackQueryHandler(premium.handle_premium_callback, pattern=r"^prem:")
     )
     # Меню активностей (выбор режима и темы)
 

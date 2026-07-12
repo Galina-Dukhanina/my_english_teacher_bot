@@ -21,6 +21,11 @@ from bot.services.session_store import (
     clear_session,
 )
 from bot.services.progress import record_activity, ACTIVITY_WORDS, ACTIVITY_REVIEW
+from bot.services.limits import (
+    check_and_consume,
+    ACTION_WORDS_SESSION,
+    get_limit_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +118,14 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     user_id = query.from_user.id
     _, fmt = query.data.split(":", 1)
+
+    limit_result = check_and_consume(user_id, ACTION_WORDS_SESSION)
+    if not limit_result.allowed:
+        await query.edit_message_text(
+            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            reply_markup=keyboards.premium_upsell_keyboard(),
+        )
+        return
 
     session = _load_session(user_id) or {}
     topic = session.get("topic", "общая лексика")
