@@ -24,7 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards, grammar
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback
 from bot.middleware.error_handler import global_error_handler
 
 logging.basicConfig(
@@ -62,6 +62,7 @@ def main():
     app.add_handler(CommandHandler("help", commands.help_command))
     app.add_handler(CommandHandler("style", commands.style_command))
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
+    app.add_handler(CommandHandler("feedback", feedback.feedback_command))
 
     # Кнопки команд (вне онбординга)
     app.add_handler(

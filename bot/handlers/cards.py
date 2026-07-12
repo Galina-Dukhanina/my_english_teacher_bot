@@ -14,11 +14,22 @@ from database.db import (
 )
 from bot import texts, keyboards
 from bot.services.ai import generate_word_set
+from bot.services.session_store import (
+    KIND_CARDS,
+    get_session,
+    save_session,
+    clear_session,
+)
 
 logger = logging.getLogger(__name__)
 
-# Сессии карточек в памяти: {user_id: {"words":[...], "index":0, "format":"...", "knew":0, "topic":"..."}}
-_card_sessions = {}
+
+def _load_session(user_id: int) -> dict | None:
+    return get_session(user_id, KIND_CARDS)
+
+
+def _store_session(user_id: int, session: dict):
+    save_session(user_id, KIND_CARDS, session)
 
 
 async def _reveal_self_check_card(context: ContextTypes.DEFAULT_TYPE):
@@ -26,7 +37,7 @@ async def _reveal_self_check_card(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     data = job.data
     user_id = data["user_id"]
-    session = _card_sessions.get(user_id)
+    session = _load_session(user_id)
     if not session or session.get("index") != data["index"]:
         return
 
@@ -79,7 +90,7 @@ async def handle_words_topic(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     topic_name = texts.TALK_TOPICS[topic]
-    _card_sessions[user_id] = {"topic": topic_name}
+    _store_session(user_id, {"topic": topic_name})
     await _ask_format(query, user_id)
 
 
@@ -102,7 +113,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = query.from_user.id
     _, fmt = query.data.split(":", 1)
 
-    session = _card_sessions.get(user_id, {})
+    session = _load_session(user_id) or {}
     topic = session.get("topic", "общая лексика")
     session["format"] = fmt
 
@@ -119,7 +130,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.message.reply_text(
             texts.WORDS_GEN_ERROR, reply_markup=keyboards.main_keyboard()
         )
-        _card_sessions.pop(user_id, None)
+        clear_session(user_id, KIND_CARDS)
         return
 
     # Слова НЕ сохраняем сразу — сохраним только те, что пользователь "не знал"
@@ -127,7 +138,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
     session["words"] = words
     session["index"] = 0
     session["knew"] = 0
-    _card_sessions[user_id] = session
+    _store_session(user_id, session)
 
     try:
         await _show_card(query.message, context, user_id)
@@ -140,7 +151,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def _show_card(message, context, user_id):
     """Показать текущую карточку в выбранном формате."""
-    session = _card_sessions.get(user_id)
+    session = _load_session(user_id)
     if not session:
         return
 
@@ -200,7 +211,7 @@ async def handle_card_answer(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_id = query.from_user.id
     action, value = query.data.split(":", 1)
 
-    session = _card_sessions.get(user_id)
+    session = _load_session(user_id)
     if not session:
         await query.message.reply_text(
             "Сессия прервалась. Начни заново через «Учить слова».",
@@ -249,7 +260,7 @@ async def handle_card_answer(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # Переход к следующей карточке
     session["index"] += 1
-    _card_sessions[user_id] = session
+    _store_session(user_id, session)
     try:
         await _show_card(query.message, context, user_id)
     except Exception as e:
@@ -258,12 +269,12 @@ async def handle_card_answer(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 async def _finish_session(message, user_id):
     """Завершить сессию, показать итог."""
-    session = _card_sessions.get(user_id, {})
+    session = _load_session(user_id) or {}
     total = len(session.get("words", []))
     knew = session.get("knew", 0)
     mode = session.get("mode", "learn")
 
-    _card_sessions.pop(user_id, None)
+    clear_session(user_id, KIND_CARDS)
     set_activity(user_id, None)
 
     if mode == "review":
@@ -280,7 +291,7 @@ async def _finish_session(message, user_id):
 
 async def start_words_with_topic(update, context, user_id, topic_name):
     """Запуск карточек со своей темой — сразу к выбору формата."""
-    _card_sessions[user_id] = {"topic": topic_name}
+    _store_session(user_id, {"topic": topic_name})
     keyboard = [
         [InlineKeyboardButton(label, callback_data=f"wformat:{code}")]
         for code, label in texts.BTN_FORMAT.items()
@@ -328,7 +339,7 @@ async def start_review(source, context: ContextTypes.DEFAULT_TYPE, user_id: int)
         "mastered_now": 0,
         "format": "timer",  # для повторения используем самопроверку
     }
-    _card_sessions[user_id] = session
+    _store_session(user_id, session)
 
     await message.reply_text(texts.REVIEW_START.format(count=len(words)))
     await _show_card(message, context, user_id)

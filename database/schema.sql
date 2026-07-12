@@ -98,6 +98,16 @@ CREATE TABLE IF NOT EXISTS conversations (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
+-- Активные сессии (карточки, упражнения) — JSON в payload
+CREATE TABLE IF NOT EXISTS sessions (
+    user_id    INTEGER NOT NULL,
+    kind       TEXT NOT NULL,
+    payload    TEXT NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, kind),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 -- Учёт расходов на AI
 CREATE TABLE IF NOT EXISTS ai_usage (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,

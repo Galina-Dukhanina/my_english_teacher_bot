@@ -132,6 +132,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await start_words_with_topic(update, context, user_id, text)
         return
 
+    if pending == "wait_feedback":
+        from bot.handlers.feedback import submit_feedback
+
+        await submit_feedback(update, context, user_id, text)
+        return
+
     # --- Обычный диалог ---
     await _send_ai_reply(update, context, user_id, user, user_text=text)
 

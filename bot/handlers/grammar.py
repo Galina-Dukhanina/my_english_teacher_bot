@@ -5,11 +5,22 @@ from telegram.ext import ContextTypes
 from database.db import get_user, set_activity, log_event
 from bot import texts, keyboards, grammar_topics
 from bot.services.ai import explain_grammar_topic, generate_grammar_exercises
+from bot.services.session_store import (
+    KIND_GRAMMAR,
+    get_session,
+    save_session,
+    clear_session,
+)
 
 logger = logging.getLogger(__name__)
 
-# Сессии упражнений в памяти
-_exercise_sessions = {}
+
+def _load_session(user_id: int) -> dict | None:
+    return get_session(user_id, KIND_GRAMMAR)
+
+
+def _store_session(user_id: int, session: dict):
+    save_session(user_id, KIND_GRAMMAR, session)
 
 
 async def start_grammar(source, context: ContextTypes.DEFAULT_TYPE, user_id: int):
@@ -136,19 +147,19 @@ async def start_exercises(source, context, user_id, topic_code):
         return
 
     log_event(user_id, "grammar_exercise")
-    _exercise_sessions[user_id] = {
+    _store_session(user_id, {
         "exercises": exercises,
         "index": 0,
         "correct": 0,
         "topic_code": topic_code,
         "topic_name": topic_name,
-    }
+    })
     await _show_exercise(message, user_id)
 
 
 async def _show_exercise(message, user_id):
     """Показать текущее упражнение."""
-    session = _exercise_sessions.get(user_id)
+    session = _load_session(user_id)
     if not session:
         return
 
@@ -197,7 +208,7 @@ async def handle_exercise_answer(update: Update, context: ContextTypes.DEFAULT_T
     parts = query.data.split(":", 2)
     is_correct = parts[1] == "1"
 
-    session = _exercise_sessions.get(user_id)
+    session = _load_session(user_id)
     if not session:
         await query.message.reply_text(
             "Упражнения прерваны. Начни заново через «Грамматика».",
@@ -222,18 +233,18 @@ async def handle_exercise_answer(update: Update, context: ContextTypes.DEFAULT_T
         pass
 
     session["index"] += 1
-    _exercise_sessions[user_id] = session
+    _store_session(user_id, session)
     await _show_exercise(query.message, user_id)
 
 
 async def _finish_exercises(message, user_id):
     """Итог упражнений + меню."""
-    session = _exercise_sessions.get(user_id, {})
+    session = _load_session(user_id) or {}
     total = len(session.get("exercises", []))
     correct = session.get("correct", 0)
     topic_code = session.get("topic_code")
 
-    _exercise_sessions.pop(user_id, None)
+    clear_session(user_id, KIND_GRAMMAR)
 
     keyboard = [
         [

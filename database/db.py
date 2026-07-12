@@ -87,6 +87,18 @@ def migrate_db():
         "CREATE INDEX IF NOT EXISTS idx_conversations_user "
         "ON conversations(user_id, id)"
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS sessions (
+            user_id    INTEGER NOT NULL,
+            kind       TEXT NOT NULL,
+            payload    TEXT NOT NULL,
+            updated_at TEXT DEFAULT (datetime('now')),
+            PRIMARY KEY (user_id, kind),
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+        """
+    )
     conn.commit()
     conn.close()
 
@@ -165,6 +177,52 @@ def record_ai_usage(user_id, tokens_in, tokens_out, model, cost_estimate):
            (user_id, tokens_in, tokens_out, model, cost_estimate)
            VALUES (?, ?, ?, ?, ?)""",
         (user_id, tokens_in, tokens_out, model, cost_estimate),
+    )
+    conn.commit()
+    conn.close()
+
+
+# ---------- Сессии (карточки, упражнения) ----------
+
+
+def get_session_payload(user_id, kind):
+    """Получить JSON-сессию или None."""
+    import json
+
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT payload FROM sessions WHERE user_id = ? AND kind = ?",
+        (user_id, kind),
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return json.loads(row["payload"])
+
+
+def save_session_payload(user_id, kind, payload: dict):
+    """Сохранить или обновить сессию (payload — dict, хранится как JSON)."""
+    import json
+
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO sessions (user_id, kind, payload, updated_at)
+           VALUES (?, ?, ?, datetime('now'))
+           ON CONFLICT(user_id, kind) DO UPDATE SET
+               payload = excluded.payload,
+               updated_at = excluded.updated_at""",
+        (user_id, kind, json.dumps(payload, ensure_ascii=False)),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_session(user_id, kind):
+    """Удалить сессию пользователя."""
+    conn = get_connection()
+    conn.execute(
+        "DELETE FROM sessions WHERE user_id = ? AND kind = ?",
+        (user_id, kind),
     )
     conn.commit()
     conn.close()
