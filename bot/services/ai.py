@@ -3,77 +3,88 @@ import httpx
 import json
 from openai import OpenAI
 from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, MODEL_DIALOG, PROXY_URL
+from bot.services.cost_control import (
+    is_daily_limit_reached,
+    log_ai_usage,
+    LIMIT_EXCEEDED_MESSAGE,
+    should_alert_admin_on_limit,
+)
 
 logger = logging.getLogger(__name__)
 
-# Создаем httpx-клиент с нашим прокси (если он задан).
-# Это нужно, потому что OpenRouter доступен только через VPN,
-# и нельзя позволить библиотеке схватить системный socks4.
 if PROXY_URL:
     http_client = httpx.Client(proxy=PROXY_URL, trust_env=False)
 else:
     http_client = httpx.Client(trust_env=False)
 
-# Клиент OpenRouter (формат совместим с OpenAI)
 client = OpenAI(
     api_key=OPENROUTER_API_KEY,
     base_url=OPENROUTER_BASE_URL,
     http_client=http_client,
 )
 
-# Сообщение-заглушка на случай, если AI недоступен
 FALLBACK_MESSAGE = (
     "Ой, что-то пошло не так с моей стороны. Попробуй написать еще раз через минуту."
 )
 
 
-def get_ai_response(system_prompt: str, history: list) -> tuple[str, dict]:
-    """Отправить запрос в OpenRouter и получить ответ.
+def _request_completion(
+    messages: list,
+    model: str,
+    max_tokens: int,
+    user_id: int | None = None,
+) -> tuple[str | None, dict]:
+    """Общий запрос к OpenRouter с проверкой лимита и учётом расходов.
 
-    system_prompt — собранный промпт под пользователя (стиль + уровень).
-    history — список сообщений диалога [{"role": "user"/"assistant", "content": "..."}].
-
-    Возвращает кортеж (текст_ответа, информация_о_расходах).
-    Если произошла ошибка — возвращает FALLBACK_MESSAGE и пустые расходы.
+    Возвращает (text, usage) или (None, {}) при ошибке/лимите.
     """
-    # Собираем сообщения: системный промпт + история диалога
-    messages = [{"role": "system", "content": system_prompt}] + history
+    if is_daily_limit_reached():
+        logger.warning("Дневной лимит расходов на AI исчерпан")
+        return None, {"limit_reached": True}
 
     try:
         response = client.chat.completions.create(
-            model=MODEL_DIALOG,
+            model=model,
             messages=messages,
-            max_tokens=500,
+            max_tokens=max_tokens,
             temperature=0.7,
         )
-
         text = response.choices[0].message.content.strip()
-
-        # Собираем информацию о расходах (для будущего cost_control)
         usage = {
             "tokens_in": response.usage.prompt_tokens,
             "tokens_out": response.usage.completion_tokens,
-            "model": MODEL_DIALOG,
+            "model": model,
         }
-
+        log_ai_usage(user_id, usage)
         logger.info(
             f"AI ответил: {usage['tokens_in']} вход / "
             f"{usage['tokens_out']} выход токенов"
         )
         return text, usage
-
     except Exception as e:
-        # Любая ошибка (нет сети, упал OpenRouter, кончились деньги) —
-        # не роняем бота, отдаем мягкую заглушку
         logger.error(f"Ошибка запроса к AI: {e}")
-        return FALLBACK_MESSAGE, {}
+        return None, {}
 
 
-def generate_word_set(topic: str, level: str, count: int = 10) -> list:
-    """Сгенерировать набор слов по теме под уровень.
-    Возвращает список словарей с word, translation, transcription, example, options.
-    options — 3 неправильных перевода для режима 'варианты ответа'."""
+def get_ai_response(
+    system_prompt: str, history: list, user_id: int | None = None
+) -> tuple[str, dict]:
+    """Отправить запрос в OpenRouter и получить ответ."""
+    messages = [{"role": "system", "content": system_prompt}] + history
+    text, usage = _request_completion(
+        messages, MODEL_DIALOG, max_tokens=500, user_id=user_id
+    )
+    if usage.get("limit_reached"):
+        return LIMIT_EXCEEDED_MESSAGE, usage
+    if text is None:
+        return FALLBACK_MESSAGE, usage
+    return text, usage
 
+
+def generate_word_set(
+    topic: str, level: str, count: int = 10, user_id: int | None = None
+) -> list:
+    """Сгенерировать набор слов по теме под уровень."""
     level_hint = {
         "beginner": "простые, базовые слова",
         "intermediate": "слова среднего уровня",
@@ -81,8 +92,10 @@ def generate_word_set(topic: str, level: str, count: int = 10) -> list:
         "unknown": "слова разного уровня",
     }.get(level, "слова разного уровня")
 
-    system = "Ты генератор учебных карточек для изучения английского. Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
-
+    system = (
+        "Ты генератор учебных карточек для изучения английского. "
+        "Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
+    )
     user = f"""Сгенерируй {count} английских слов по теме «{topic}» ({level_hint}).
 Для каждого слова дай: само слово, перевод на русский, транскрипцию (IPA и русскими буквами в скобках), короткий пример предложения, и 3 НЕПРАВИЛЬНЫХ перевода (похожие, но другие слова) для теста.
 
@@ -98,32 +111,31 @@ def generate_word_set(topic: str, level: str, count: int = 10) -> list:
         {"role": "user", "content": user},
     ]
 
+    text, usage = _request_completion(
+        messages, MODEL_DIALOG, max_tokens=2000, user_id=user_id
+    )
+    if not text:
+        return []
+
     try:
-        response = client.chat.completions.create(
-            model=MODEL_DIALOG,
-            messages=messages,
-            max_tokens=2000,
-            temperature=0.7,
-        )
-        text = response.choices[0].message.content.strip()
-
-        # Убираем возможные markdown-обертки ```json ... ```
         text = text.replace("```json", "").replace("```", "").strip()
-
         words = json.loads(text)
         logger.info(f"Сгенерировано слов: {len(words)} по теме '{topic}'")
         return words
-
     except json.JSONDecodeError as e:
         logger.error(f"AI вернул невалидный JSON для слов: {e}")
         return []
-    except Exception as e:
-        logger.error(f"Ошибка генерации слов: {e}")
-        return []
 
 
-def explain_grammar_topic(topic: str, level: str, style: str, language: str) -> str:
-    """Сгенерировать объяснение грамматической темы под уровень/стиль/язык."""
+def explain_grammar_topic(
+    topic: str,
+    level: str,
+    style: str,
+    language: str,
+    user_id: int | None = None,
+) -> str:
+    """Сгенерировать объяснение грамматической темы."""
+    del style
 
     lang_hint = {
         "ru": "Объясняй на русском языке.",
@@ -160,23 +172,16 @@ def explain_grammar_topic(topic: str, level: str, style: str, language: str) -> 
         {"role": "user", "content": user},
     ]
 
-    try:
-        response = client.chat.completions.create(
-            model=MODEL_DIALOG,
-            messages=messages,
-            max_tokens=1500,
-            temperature=0.7,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        logger.error(f"Ошибка объяснения грамматики: {e}")
-        return ""
+    text, _ = _request_completion(
+        messages, MODEL_DIALOG, max_tokens=1500, user_id=user_id
+    )
+    return text or ""
 
 
-def generate_grammar_exercises(topic: str, level: str, count: int = 5) -> list:
-    """Сгенерировать упражнения по грамматической теме (multiple choice).
-    Возвращает список: [{"sentence":..., "options":[...], "correct":..., "explanation":...}]"""
-
+def generate_grammar_exercises(
+    topic: str, level: str, count: int = 5, user_id: int | None = None
+) -> list:
+    """Сгенерировать упражнения по грамматической теме (multiple choice)."""
     level_hint = {
         "beginner": "простые предложения, базовая лексика",
         "intermediate": "предложения средней сложности",
@@ -184,7 +189,10 @@ def generate_grammar_exercises(topic: str, level: str, count: int = 5) -> list:
         "unknown": "простые предложения",
     }.get(level, "простые предложения")
 
-    system = "Ты генератор упражнений по английской грамматике. Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
+    system = (
+        "Ты генератор упражнений по английской грамматике. "
+        "Отвечай ТОЛЬКО валидным JSON, без пояснений и markdown."
+    )
 
     user = f"""Создай {count} упражнений по теме «{topic}» ({level_hint}).
 Каждое упражнение — предложение с пропуском (___), 3-4 варианта ответа, правильный вариант, и краткое пояснение почему.
@@ -201,21 +209,22 @@ def generate_grammar_exercises(topic: str, level: str, count: int = 5) -> list:
         {"role": "user", "content": user},
     ]
 
+    text, _ = _request_completion(
+        messages, MODEL_DIALOG, max_tokens=2000, user_id=user_id
+    )
+    if not text:
+        return []
+
     try:
-        response = client.chat.completions.create(
-            model=MODEL_DIALOG,
-            messages=messages,
-            max_tokens=2000,
-            temperature=0.7,
-        )
-        text = response.choices[0].message.content.strip()
         text = text.replace("```json", "").replace("```", "").strip()
-
-        import json
-
         exercises = json.loads(text)
         logger.info(f"Сгенерировано упражнений: {len(exercises)} по теме '{topic}'")
         return exercises
     except Exception as e:
         logger.error(f"Ошибка генерации упражнений: {e}")
         return []
+
+
+def check_limit_alert_pending() -> bool:
+    """Нужно ли отправить admin алерт о превышении дневного лимита."""
+    return should_alert_admin_on_limit()

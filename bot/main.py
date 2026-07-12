@@ -25,6 +25,7 @@ from telegram.ext import (
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
 from bot.handlers import onboarding, commands, dialog, activities, cards, grammar
+from bot.middleware.error_handler import global_error_handler
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,6 +47,7 @@ def main():
         builder = builder.proxy(PROXY_URL).get_updates_proxy(PROXY_URL)
         logger.info(f"Используется прокси: {PROXY_URL}")
     app = builder.build()
+    app.add_error_handler(global_error_handler)
 
     # Онбординг
     app.add_handler(CommandHandler("start", onboarding.start))
@@ -110,12 +112,7 @@ def main():
         CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
     )
 
-    # Кнопка выбора языка объяснений (inline-кнопки)
-    app.add_handler(
-        CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
-    )
-
-    # Основной диалог — ловит любой текст, который НЕ команда.
+    # Основной диалог
     # Должен идти ПОСЛЕДНИМ, чтобы не перехватывать команды.
     app.add_handler(
         MessageHandler(

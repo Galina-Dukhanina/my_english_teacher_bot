@@ -55,6 +55,7 @@ async def _explain_topic(query, user_id, topic_code):
         level=level,
         style=user["style"],
         language=user["explanation_language"],
+        user_id=user_id,
     )
 
     log_event(user_id, "grammar_topic")
@@ -127,7 +128,7 @@ async def start_exercises(source, context, user_id, topic_code):
 
     await message.reply_text(texts.GRAMMAR_EX_GENERATING.format(topic=topic_name))
 
-    exercises = generate_grammar_exercises(topic_name, level, count=5)
+    exercises = generate_grammar_exercises(topic_name, level, count=5, user_id=user_id)
     if not exercises:
         await message.reply_text(
             texts.GRAMMAR_EX_ERROR, reply_markup=keyboards.main_keyboard()

@@ -71,6 +71,101 @@ def migrate_db():
                     print(f"Миграция: добавлена колонка {table}.{col_name}")
                 except Exception as e:
                     print(f"Миграция: не удалось добавить {table}.{col_name}: {e}")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS conversations (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id    INTEGER,
+            role       TEXT,
+            content    TEXT,
+            created_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_conversations_user "
+        "ON conversations(user_id, id)"
+    )
+    conn.commit()
+    conn.close()
+
+
+# ---------- История диалогов ----------
+
+
+def get_conversation_history(user_id, limit=20):
+    """Последние N сообщений диалога для AI (хронологический порядок)."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT role, content FROM conversations
+           WHERE user_id = ?
+           ORDER BY id DESC LIMIT ?""",
+        (user_id, limit),
+    ).fetchall()
+    conn.close()
+    return [{"role": row["role"], "content": row["content"]} for row in reversed(rows)]
+
+
+def add_conversation_message(user_id, role, content):
+    """Добавить сообщение в историю диалога."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO conversations (user_id, role, content) VALUES (?, ?, ?)",
+        (user_id, role, content),
+    )
+    conn.commit()
+    conn.close()
+
+
+def trim_conversation_history(user_id, max_messages):
+    """Оставить только последние max_messages записей."""
+    conn = get_connection()
+    conn.execute(
+        """DELETE FROM conversations
+           WHERE user_id = ? AND id NOT IN (
+               SELECT id FROM conversations
+               WHERE user_id = ?
+               ORDER BY id DESC LIMIT ?
+           )""",
+        (user_id, user_id, max_messages),
+    )
+    conn.commit()
+    conn.close()
+
+
+def clear_conversation_history(user_id):
+    """Очистить историю диалога пользователя."""
+    conn = get_connection()
+    conn.execute("DELETE FROM conversations WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+# ---------- Учёт расходов AI ----------
+
+
+def get_today_ai_spend():
+    """Сумма cost_estimate за сегодня (UTC-дата SQLite datetime('now'))."""
+    conn = get_connection()
+    row = conn.execute(
+        """SELECT COALESCE(SUM(cost_estimate), 0) AS total
+           FROM ai_usage
+           WHERE date(created_at) = date('now')"""
+    ).fetchone()
+    conn.close()
+    return float(row["total"] or 0)
+
+
+def record_ai_usage(user_id, tokens_in, tokens_out, model, cost_estimate):
+    """Записать один AI-запрос в ai_usage."""
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO ai_usage
+           (user_id, tokens_in, tokens_out, model, cost_estimate)
+           VALUES (?, ?, ?, ?, ?)""",
+        (user_id, tokens_in, tokens_out, model, cost_estimate),
+    )
     conn.commit()
     conn.close()
 

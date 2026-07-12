@@ -1,5 +1,4 @@
 import logging
-import asyncio
 import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
@@ -10,10 +9,8 @@ from database.db import (
     set_pending_action,
     log_event,
     add_words_batch,
-    get_vocab_stats,
     get_words_to_review,
     review_word_result,
-    count_words_to_review,
 )
 from bot import texts, keyboards
 from bot.services.ai import generate_word_set
@@ -22,6 +19,36 @@ logger = logging.getLogger(__name__)
 
 # Сессии карточек в памяти: {user_id: {"words":[...], "index":0, "format":"...", "knew":0, "topic":"..."}}
 _card_sessions = {}
+
+
+async def _reveal_self_check_card(context: ContextTypes.DEFAULT_TYPE):
+    """Показать ответ карточки самопроверки через JobQueue (не блокирует бота)."""
+    job = context.job
+    data = job.data
+    user_id = data["user_id"]
+    session = _card_sessions.get(user_id)
+    if not session or session.get("index") != data["index"]:
+        return
+
+    word = data["word"]
+    transcription = data.get("transcription", "")
+    translation = data.get("translation", "?")
+    example = data.get("example", "")
+    answer_text = f"{word} — {translation}\nЧитать как:\n{transcription}"
+    if example:
+        answer_text += f"\n\nПример: {example}"
+    keyboard = [
+        [
+            InlineKeyboardButton(texts.CARD_KNEW, callback_data="wself:1"),
+            InlineKeyboardButton(texts.CARD_DIDNT, callback_data="wself:0"),
+        ],
+        [InlineKeyboardButton(texts.CARD_STOP, callback_data="wstop:1")],
+    ]
+    await context.bot.send_message(
+        chat_id=data["chat_id"],
+        text=answer_text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
 
 
 async def start_words(source, context: ContextTypes.DEFAULT_TYPE, user_id: int):
@@ -86,7 +113,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
     )
 
     user = get_user(user_id)
-    words = generate_word_set(topic, user["level"] or "unknown", count=10)
+    words = generate_word_set(topic, user["level"] or "unknown", count=10, user_id=user_id)
 
     if not words:
         await query.message.reply_text(
@@ -149,24 +176,20 @@ async def _show_card(message, context, user_id):
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
     else:
-        # Формат "самопроверка": слово, через 5 сек ответ + кнопки знал/не знал
         await message.reply_text(f"Вспомни перевод:\n\n{word.upper()}")
-        await asyncio.sleep(5)
-        transcription = card.get("transcription", "")
-        translation = card.get("translation", "?")
-        example = card.get("example", "")
-        answer_text = f"{word} — {translation}\nЧитать как:\n{transcription}"
-        if example:
-            answer_text += f"\n\nПример: {example}"
-        keyboard = [
-            [
-                InlineKeyboardButton(texts.CARD_KNEW, callback_data="wself:1"),
-                InlineKeyboardButton(texts.CARD_DIDNT, callback_data="wself:0"),
-            ],
-            [InlineKeyboardButton(texts.CARD_STOP, callback_data="wstop:1")],
-        ]
-        await message.reply_text(
-            answer_text, reply_markup=InlineKeyboardMarkup(keyboard)
+        context.job_queue.run_once(
+            _reveal_self_check_card,
+            when=5,
+            data={
+                "user_id": user_id,
+                "chat_id": message.chat_id,
+                "index": index,
+                "word": word,
+                "translation": card.get("translation", "?"),
+                "transcription": card.get("transcription", ""),
+                "example": card.get("example", ""),
+            },
+            name=f"card_reveal_{user_id}_{index}",
         )
 
 

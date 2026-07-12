@@ -88,6 +88,16 @@ CREATE TABLE IF NOT EXISTS events (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+-- История диалогов для контекста AI
+CREATE TABLE IF NOT EXISTS conversations (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER,
+    role       TEXT,
+    content    TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 -- Учёт расходов на AI
 CREATE TABLE IF NOT EXISTS ai_usage (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,

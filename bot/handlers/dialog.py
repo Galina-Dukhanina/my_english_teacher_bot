@@ -16,7 +16,9 @@ from database.db import (
 
 from bot import memory, prompts, texts, keyboards
 from bot.handlers import activities
-from bot.services.ai import get_ai_response
+from config import ADMIN_USER_ID
+from bot.services.ai import get_ai_response, check_limit_alert_pending
+from bot.services.cost_control import LIMIT_EXCEEDED_MESSAGE
 
 logger = logging.getLogger(__name__)
 
@@ -158,9 +160,18 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
         chat_id=update.effective_chat.id, action=ChatAction.TYPING
     )
 
-    answer, usage = get_ai_response(system_prompt, history)
+    answer, usage = get_ai_response(system_prompt, history, user_id=user_id)
 
-    if not special:
+    if usage.get("limit_reached") and check_limit_alert_pending() and ADMIN_USER_ID:
+        try:
+            await context.bot.send_message(
+                chat_id=ADMIN_USER_ID,
+                text="⚠️ Достигнут дневной лимит расходов на AI (DAILY_COST_LIMIT_USD).",
+            )
+        except Exception as e:
+            logger.error(f"Не удалось отправить алерт о лимите admin: {e}")
+
+    if not special and answer != LIMIT_EXCEEDED_MESSAGE:
         memory.add_message(user_id, "assistant", answer)
     log_event(user_id, "dialog")
 
