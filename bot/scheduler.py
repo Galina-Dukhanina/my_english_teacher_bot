@@ -18,8 +18,17 @@ async def _reminders_job(app):
         logger.info(f"Отправлено напоминаний: {count}")
 
 
-async def _expire_premium_job():
-    expire_premium_users()
+async def _expire_premium_job(app):
+    from bot import texts
+
+    user_ids = expire_premium_users()
+    for user_id in user_ids:
+        try:
+            await app.bot.send_message(chat_id=user_id, text=texts.PREMIUM_EXPIRED)
+        except Exception as e:
+            logger.error(f"Не удалось уведомить об истечении premium {user_id}: {e}")
+    if user_ids:
+        logger.info(f"Premium истёк у {len(user_ids)} пользователей")
 
 
 def start_scheduler(app):
@@ -42,6 +51,7 @@ def start_scheduler(app):
         "cron",
         hour=3,
         minute=0,
+        args=[app],
         id="expire_premium",
         replace_existing=True,
     )

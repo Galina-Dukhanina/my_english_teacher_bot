@@ -552,17 +552,37 @@ def activate_premium(user_id, days: int):
     update_user(user_id, is_premium=1, premium_until=until)
 
 
-def expire_premium_users():
-    """Снять premium у пользователей с истёкшим сроком."""
+def expire_premium_users() -> list[int]:
+    """Снять premium у пользователей с истёкшим сроком. Возвращает их user_id."""
     conn = get_connection()
-    conn.execute(
-        """UPDATE users SET is_premium = 0
+    rows = conn.execute(
+        """SELECT user_id FROM users
            WHERE is_premium = 1
              AND premium_until IS NOT NULL
              AND premium_until < datetime('now')"""
-    )
+    ).fetchall()
+    user_ids = [row["user_id"] for row in rows]
+    if user_ids:
+        conn.execute(
+            """UPDATE users SET is_premium = 0
+               WHERE is_premium = 1
+                 AND premium_until IS NOT NULL
+                 AND premium_until < datetime('now')"""
+        )
     conn.commit()
     conn.close()
+    return user_ids
+
+
+def count_premium_users():
+    conn = get_connection()
+    row = conn.execute(
+        """SELECT COUNT(*) AS cnt FROM users
+           WHERE is_premium = 1
+             AND (premium_until IS NULL OR premium_until >= datetime('now'))"""
+    ).fetchone()
+    conn.close()
+    return row["cnt"] or 0
 
 
 # ---------- Обратная связь ----------

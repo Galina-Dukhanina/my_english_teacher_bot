@@ -8,6 +8,7 @@ from database.db import (
     get_funnel_counts,
     get_today_ai_spend,
     count_new_feedback,
+    count_premium_users,
 )
 
 
@@ -21,6 +22,7 @@ def get_admin_stats(days: int = 7) -> dict:
         "funnel": get_funnel_counts(),
         "ai_spend_today": get_today_ai_spend(),
         "new_feedback": count_new_feedback(),
+        "premium_users": count_premium_users(),
     }
 
 
@@ -30,7 +32,7 @@ def format_admin_stats(stats: dict, daily_limit_usd: float) -> str:
         "📊 Статистика бота",
         "",
         f"Пользователи: {stats['total_users']} "
-        f"(онбординг: {stats['onboarded_users']})",
+        f"(онбординг: {stats['onboarded_users']}, premium: {stats['premium_users']})",
         "",
         f"DAU ({len(stats['dau'])} дн):",
     ]

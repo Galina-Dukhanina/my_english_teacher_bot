@@ -24,7 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium, vocab
 from bot.middleware.error_handler import global_error_handler
 from bot.scheduler import start_scheduler, stop_scheduler
 from bot.services.reminders import handle_reminder_off
@@ -69,6 +69,7 @@ def main():
     app.add_handler(CommandHandler("stats", commands.stats_command))
     app.add_handler(CommandHandler("premium", premium.premium_command))
     app.add_handler(CommandHandler("grant_premium", premium.grant_premium_command))
+    app.add_handler(CommandHandler("addword", vocab.addword_command))
 
     # Кнопки команд (вне онбординга)
     app.add_handler(
