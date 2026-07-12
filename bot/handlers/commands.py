@@ -5,6 +5,8 @@ from telegram.ext import ContextTypes
 from database.db import get_user, update_user, log_event
 from bot import texts
 from bot.services.progress import get_progress_summary, streak_label
+from bot.services.analytics import get_admin_stats, format_admin_stats
+from config import ADMIN_USER_ID, DAILY_COST_LIMIT_USD
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,23 @@ async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             to_review=summary["to_review"],
             total_messages=summary["total_messages"],
         )
+    )
+
+
+# ---------- /stats (admin) ----------
+
+
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Сводка метрик — только для ADMIN_USER_ID."""
+    user_id = update.effective_user.id
+    if not ADMIN_USER_ID or user_id != ADMIN_USER_ID:
+        await update.message.reply_text("Команда недоступна.")
+        return
+
+    stats = get_admin_stats()
+    log_event(user_id, "admin_stats")
+    await update.message.reply_text(
+        format_admin_stats(stats, DAILY_COST_LIMIT_USD)
     )
 
 

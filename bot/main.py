@@ -66,6 +66,7 @@ def main():
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
     app.add_handler(CommandHandler("progress", commands.progress_command))
+    app.add_handler(CommandHandler("stats", commands.stats_command))
 
     # Кнопки команд (вне онбординга)
     app.add_handler(

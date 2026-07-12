@@ -2,15 +2,22 @@ import sqlite3
 import os
 from datetime import datetime
 
-# Путь к файлу базы (ляжет в корень проекта)
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "bot_database.db")
+# Путь к файлу базы (можно переопределить через DB_PATH в .env)
+DB_PATH = os.getenv(
+    "DB_PATH",
+    os.path.join(os.path.dirname(__file__), "..", "bot_database.db"),
+)
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 
 def get_connection():
     """Открыть соединение с базой. row_factory позволяет обращаться к полям по имени."""
+    db_dir = os.path.dirname(os.path.abspath(DB_PATH))
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 
@@ -359,6 +366,79 @@ def log_event(user_id, event_type):
     )
     conn.commit()
     conn.close()
+
+
+# ---------- Аналитика (admin /stats) ----------
+
+
+def count_users():
+    conn = get_connection()
+    row = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()
+    conn.close()
+    return row["cnt"] or 0
+
+
+def count_onboarded_users():
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT COUNT(*) AS cnt FROM users WHERE onboarding_done = 1"
+    ).fetchone()
+    conn.close()
+    return row["cnt"] or 0
+
+
+def get_dau_last_days(days: int = 7):
+    """DAU по дням: список (date, count) за последние N дней."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT date(created_at) AS day, COUNT(DISTINCT user_id) AS cnt
+           FROM events
+           WHERE created_at >= date('now', ?)
+           GROUP BY day
+           ORDER BY day""",
+        (f"-{days - 1} days",),
+    ).fetchall()
+    conn.close()
+    return [(row["day"], row["cnt"]) for row in rows]
+
+
+def get_top_events(days: int = 7, limit: int = 10):
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT event_type, COUNT(*) AS cnt
+           FROM events
+           WHERE created_at >= date('now', ?)
+           GROUP BY event_type
+           ORDER BY cnt DESC
+           LIMIT ?""",
+        (f"-{days - 1} days", limit),
+    ).fetchall()
+    conn.close()
+    return [(row["event_type"], row["cnt"]) for row in rows]
+
+
+def get_funnel_counts():
+    """Уникальные пользователи по ключевым этапам воронки."""
+    conn = get_connection()
+    result = {}
+    for event_type in ("start", "onboarding_done", "dialog"):
+        row = conn.execute(
+            """SELECT COUNT(DISTINCT user_id) AS cnt
+               FROM events WHERE event_type = ?""",
+            (event_type,),
+        ).fetchone()
+        result[event_type] = row["cnt"] or 0
+    conn.close()
+    return result
+
+
+def count_new_feedback():
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT COUNT(*) AS cnt FROM feedback WHERE status = 'new'"
+    ).fetchone()
+    conn.close()
+    return row["cnt"] or 0
 
 
 # ---------- Обратная связь ----------

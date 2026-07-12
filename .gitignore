@@ -14,6 +14,10 @@ env/
 *.sqlite
 *.sqlite3
 
+# Локальные данные и бэкапы
+data/
+backups/
+
 # Логи
 *.log
 
