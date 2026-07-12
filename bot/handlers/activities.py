@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, set_activity, log_event, set_pending_action
 from bot import texts
+from bot.services.progress import record_activity, ACTIVITY_MENU
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ async def handle_activity_button(update: Update, context: ContextTypes.DEFAULT_T
     _, activity = query.data.split(":", 1)
 
     log_event(user_id, f"activity_{activity}")
+    record_activity(user_id, ACTIVITY_MENU)
 
     if activity == "talk":
         set_activity(user_id, "talk")

@@ -26,6 +26,8 @@ from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
 from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback
 from bot.middleware.error_handler import global_error_handler
+from bot.scheduler import start_scheduler, stop_scheduler
+from bot.services.reminders import handle_reminder_off
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -63,6 +65,7 @@ def main():
     app.add_handler(CommandHandler("style", commands.style_command))
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
+    app.add_handler(CommandHandler("progress", commands.progress_command))
 
     # Кнопки команд (вне онбординга)
     app.add_handler(
@@ -72,6 +75,9 @@ def main():
         CallbackQueryHandler(
             commands.handle_reminders_button, pattern=r"^(rem|remtime):"
         )
+    )
+    app.add_handler(
+        CallbackQueryHandler(handle_reminder_off, pattern=r"^reminder:off$")
     )
     # Меню активностей (выбор режима и темы)
 
@@ -123,7 +129,11 @@ def main():
     )
 
     logger.info("Бот запускается...")
-    app.run_polling()
+    start_scheduler(app)
+    try:
+        app.run_polling()
+    finally:
+        stop_scheduler()
 
 
 if __name__ == "__main__":

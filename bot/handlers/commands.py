@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, update_user, log_event
 from bot import texts
+from bot.services.progress import get_progress_summary, streak_label
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,31 @@ logger = logging.getLogger(__name__)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_event(update.effective_user.id, "help")
     await update.message.reply_text(texts.HELP)
+
+
+# ---------- /progress ----------
+
+
+async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать прогресс и streak пользователя."""
+    user_id = update.effective_user.id
+    user = get_user(user_id)
+    if not user or not user["onboarding_done"]:
+        await update.message.reply_text("Сначала пройди онбординг: /start")
+        return
+
+    summary = get_progress_summary(user_id)
+    log_event(user_id, "progress_view")
+    await update.message.reply_text(
+        texts.PROGRESS.format(
+            streak_days=summary["streak_days"],
+            streak_label=streak_label(summary["streak_days"]),
+            new_words=summary["new_words"],
+            mastered_words=summary["mastered_words"],
+            to_review=summary["to_review"],
+            total_messages=summary["total_messages"],
+        )
+    )
 
 
 # ---------- /style ----------

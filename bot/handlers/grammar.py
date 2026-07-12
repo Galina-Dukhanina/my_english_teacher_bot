@@ -11,6 +11,7 @@ from bot.services.session_store import (
     save_session,
     clear_session,
 )
+from bot.services.progress import record_activity, ACTIVITY_GRAMMAR
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ async def _explain_topic(query, user_id, topic_code):
     )
 
     log_event(user_id, "grammar_topic")
+    record_activity(user_id, ACTIVITY_GRAMMAR)
 
     if not explanation:
         await query.message.reply_text(
@@ -147,6 +149,7 @@ async def start_exercises(source, context, user_id, topic_code):
         return
 
     log_event(user_id, "grammar_exercise")
+    record_activity(user_id, ACTIVITY_GRAMMAR)
     _store_session(user_id, {
         "exercises": exercises,
         "index": 0,

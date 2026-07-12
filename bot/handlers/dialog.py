@@ -19,6 +19,7 @@ from bot.handlers import activities
 from config import ADMIN_USER_ID
 from bot.services.ai import get_ai_response, check_limit_alert_pending
 from bot.services.cost_control import LIMIT_EXCEEDED_MESSAGE
+from bot.services.progress import record_activity, ACTIVITY_DIALOG
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +181,8 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
     if not special and answer != LIMIT_EXCEEDED_MESSAGE:
         memory.add_message(user_id, "assistant", answer)
     log_event(user_id, "dialog")
+    if not special and answer != LIMIT_EXCEEDED_MESSAGE:
+        record_activity(user_id, ACTIVITY_DIALOG)
 
     # Чистим разметку и отправляем обычным текстом — надежно, без сбоев парсинга.
     clean_answer = _strip_markdown(answer)

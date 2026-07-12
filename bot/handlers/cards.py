@@ -20,6 +20,7 @@ from bot.services.session_store import (
     save_session,
     clear_session,
 )
+from bot.services.progress import record_activity, ACTIVITY_WORDS, ACTIVITY_REVIEW
 
 logger = logging.getLogger(__name__)
 
@@ -276,6 +277,11 @@ async def _finish_session(message, user_id):
 
     clear_session(user_id, KIND_CARDS)
     set_activity(user_id, None)
+
+    if mode == "review":
+        record_activity(user_id, ACTIVITY_REVIEW)
+    else:
+        record_activity(user_id, ACTIVITY_WORDS)
 
     if mode == "review":
         mastered = session.get("mastered_now", 0)

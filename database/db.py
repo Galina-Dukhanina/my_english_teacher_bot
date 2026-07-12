@@ -228,6 +228,86 @@ def delete_session(user_id, kind):
     conn.close()
 
 
+# ---------- Прогресс и streak ----------
+
+
+def get_progress(user_id):
+    """Запись прогресса пользователя или None."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT * FROM progress WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def update_progress(user_id, **fields):
+    """Обновить поля progress. Создаёт запись, если её нет."""
+    if not fields:
+        return
+    conn = get_connection()
+    conn.execute("INSERT OR IGNORE INTO progress (user_id) VALUES (?)", (user_id,))
+    columns = ", ".join(f"{key} = ?" for key in fields)
+    values = list(fields.values()) + [user_id]
+    conn.execute(f"UPDATE progress SET {columns} WHERE user_id = ?", values)
+    conn.commit()
+    conn.close()
+
+
+def sync_progress_words(user_id):
+    """Синхронизировать total_words с количеством слов в vocabulary."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT COUNT(*) AS cnt FROM vocabulary WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    total = row["cnt"] or 0
+    conn.execute("INSERT OR IGNORE INTO progress (user_id) VALUES (?)", (user_id,))
+    conn.execute(
+        "UPDATE progress SET total_words = ? WHERE user_id = ?",
+        (total, user_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+# ---------- Напоминания ----------
+
+
+def get_users_for_reminders():
+    """Пользователи с включёнными напоминаниями и завершённым онбордингом."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT user_id, timezone, reminder_time
+           FROM users
+           WHERE reminder_enabled = 1 AND onboarding_done = 1"""
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def reminder_sent_today(user_id, date_str):
+    """True, если напоминание уже отправляли сегодня (date_str — YYYY-MM-DD)."""
+    conn = get_connection()
+    row = conn.execute(
+        """SELECT COUNT(*) AS cnt FROM reminders
+           WHERE user_id = ? AND date(sent_at) = ?""",
+        (user_id, date_str),
+    ).fetchone()
+    conn.close()
+    return (row["cnt"] or 0) > 0
+
+
+def record_reminder_sent(user_id):
+    """Записать факт отправки напоминания."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO reminders (user_id) VALUES (?)",
+        (user_id,),
+    )
+    conn.commit()
+    conn.close()
+
+
 # ---------- Пользователи ----------
 
 
