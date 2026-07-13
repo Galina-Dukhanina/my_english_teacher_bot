@@ -135,6 +135,8 @@ def explain_grammar_topic(
     user_id: int | None = None,
 ) -> str:
     """Сгенерировать объяснение грамматической темы."""
+    from bot.prompts import GRAMMAR_EXPLANATION_FORMAT
+
     del style
 
     lang_hint = {
@@ -159,13 +161,7 @@ def explain_grammar_topic(
 
     user = f"""Объясни тему английской грамматики: «{topic}».
 
-Структура объяснения:
-1. Что это и зачем нужно (кратко)
-2. Как образуется (правило)
-3. Примеры (3-4 штуки с переводом)
-4. Типичные ошибки или важные моменты
-
-Будь понятным и не слишком длинным. Это чат, не учебник."""
+{GRAMMAR_EXPLANATION_FORMAT}"""
 
     messages = [
         {"role": "system", "content": system},

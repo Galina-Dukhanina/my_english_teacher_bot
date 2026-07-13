@@ -100,8 +100,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context,
             user_id,
             user,
-            special=f"Покажи, как читается слово или фраза '{text}'. "
-            f"Дай транскрипцию в формате IPA и русскими буквами. Кратко.",
+            special=prompts.build_pronounce_request(text),
         )
         return
     if pending == "wait_meaning":
@@ -112,8 +111,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context,
             user_id,
             user,
-            special=f"Объясни простыми словами, что значит '{word}', "
-            f"и приведи пример употребления. Кратко.",
+            special=prompts.build_meaning_request(word),
         )
         if answer and answer != LIMIT_EXCEEDED_MESSAGE:
             if is_premium(user_id):
@@ -130,9 +128,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_activity(user_id, "talk")
         set_topic(user_id, text)
         await update.message.reply_text(
-            f"Отлично, говорим про «{text}». Начинай — напиши что-нибудь по-английски.",
+            texts.TALK_TOPIC_SET.format(topic=text),
             reply_markup=keyboards.main_keyboard(),
         )
+        from bot.handlers.dialog import send_talk_opener
+
+        await send_talk_opener(update.message, context, user_id, text)
         return
 
     if pending == "wait_words_topic":
@@ -168,6 +169,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Обычный диалог ---
     await _send_ai_reply(update, context, user_id, user, user_text=text)
+
+
+async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Голосовые сообщения пока не поддерживаются."""
+    await update.message.reply_text(
+        texts.VOICE_NOT_SUPPORTED,
+        reply_markup=keyboards.main_keyboard(),
+    )
 
 
 async def _send_ai_reply(update, context, user_id, user, user_text=None, special=None):
@@ -228,6 +237,57 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
         reply_markup=keyboards.main_keyboard(),
     )
     return clean_answer
+
+
+async def send_talk_opener(message, context, user_id: int, topic_name: str):
+    """Бот задает первый вопрос в режиме «Поговорить»."""
+    user = get_user(user_id)
+    if not user:
+        return
+
+    limit_result = check_and_consume(user_id, ACTION_MESSAGES)
+    if not limit_result.allowed:
+        await message.reply_text(
+            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            reply_markup=keyboards.premium_upsell_keyboard(),
+        )
+        return
+
+    system_prompt = prompts.build_system_prompt(
+        style=user["style"],
+        level=user["level"] or "unknown",
+        explanation_language=user["explanation_language"],
+        topic=topic_name,
+    )
+    opener_prompt = prompts.build_talk_opener_request(topic_name)
+
+    await context.bot.send_chat_action(
+        chat_id=message.chat_id, action=ChatAction.TYPING
+    )
+
+    answer, usage = get_ai_response(
+        system_prompt,
+        [{"role": "user", "content": opener_prompt}],
+        user_id=user_id,
+    )
+
+    if usage.get("limit_reached") and check_limit_alert_pending() and ADMIN_USER_ID:
+        try:
+            await context.bot.send_message(
+                chat_id=ADMIN_USER_ID,
+                text="⚠️ Достигнут дневной лимит расходов на AI (DAILY_COST_LIMIT_USD).",
+            )
+        except Exception as e:
+            logger.error(f"Не удалось отправить алерт о лимите admin: {e}")
+
+    if answer == LIMIT_EXCEEDED_MESSAGE:
+        await message.reply_text(answer, reply_markup=keyboards.main_keyboard())
+        return
+
+    clean = _strip_markdown(answer)
+    memory.add_message(user_id, "assistant", clean)
+    log_event(user_id, "talk_opener")
+    await message.reply_text(clean, reply_markup=keyboards.main_keyboard())
 
 
 # ---------- Инструменты (вызываются кнопками) ----------

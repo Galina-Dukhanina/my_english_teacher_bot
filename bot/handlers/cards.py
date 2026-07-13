@@ -181,7 +181,7 @@ async def _show_card(message, context, user_id):
     fmt = session["format"]
 
     if fmt == "options":
-        # Формат "варианты ответа": слово + кнопки с переводами
+        # EN → RU: английское слово, варианты — переводы
         correct = card.get("translation", "?")
         options = card.get("options", [])[:3] + [correct]
         random.shuffle(options)
@@ -197,7 +197,35 @@ async def _show_card(message, context, user_id):
             [InlineKeyboardButton(texts.CARD_STOP, callback_data="wstop:1")]
         )
         await message.reply_text(
-            f"Выбери правильный перевод слова:\n\n{word.upper()}",
+            f"Выбери перевод на русский:\n\n{word.upper()}",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+        )
+    elif fmt == "options_reverse":
+        # RU → EN: русское слово, варианты — английские слова
+        prompt = card.get("translation", "?")
+        correct = card.get("word", "?")
+        others = [
+            w.get("word")
+            for i, w in enumerate(words)
+            if i != index and w.get("word") and w.get("word") != correct
+        ]
+        random.shuffle(others)
+        distractors = others[:3]
+        options = distractors + [correct]
+        random.shuffle(options)
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    opt, callback_data=f"wans:{'1' if opt == correct else '0'}"
+                )
+            ]
+            for opt in options
+        ]
+        keyboard.append(
+            [InlineKeyboardButton(texts.CARD_STOP, callback_data="wstop:1")]
+        )
+        await message.reply_text(
+            f"Выбери перевод на английский:\n\n{prompt.capitalize()}",
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
     else:
@@ -261,12 +289,16 @@ async def handle_card_answer(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # Для формата "варианты" показываем результат
     if action == "wans":
-        correct = card.get("translation", "?")
         transcription = card.get("transcription", "")
-        if knew:
-            feedback = f"✅ Верно!\n\n{card.get('word')} — {correct}\nЧитать как:\n{transcription}"
+        fmt = session.get("format", "options")
+        if fmt == "options_reverse":
+            pair = f"{card.get('translation')} — {card.get('word')}"
         else:
-            feedback = f"❌ Правильный ответ:\n\n{card.get('word')} — {correct}\nЧитать как:\n{transcription}"
+            pair = f"{card.get('word')} — {card.get('translation', '?')}"
+        if knew:
+            feedback = f"✅ Верно!\n\n{pair}\nЧитать как:\n{transcription}"
+        else:
+            feedback = f"❌ Правильный ответ:\n\n{pair}\nЧитать как:\n{transcription}"
         try:
             await query.edit_message_text(feedback)
         except Exception:

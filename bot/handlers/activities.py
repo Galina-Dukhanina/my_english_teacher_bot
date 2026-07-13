@@ -83,9 +83,7 @@ async def handle_topic_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
 
     topic_name = texts.TALK_TOPICS[topic]
-    set_activity(user_id, "talk")
-    set_topic(user_id, topic_name)
-    await query.edit_message_text(f"Тема: {topic_name}")
-    await query.message.reply_text(
-        f"Давай поговорим про «{topic_name}». Начинай — напиши что-нибудь по-английски."
-    )
+    from bot.services.talk import begin_talk_session
+
+    await query.edit_message_text(texts.TALK_TOPIC_SET.format(topic=topic_name))
+    await begin_talk_session(query.message, context, user_id, topic_name)

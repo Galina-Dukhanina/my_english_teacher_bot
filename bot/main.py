@@ -139,6 +139,9 @@ def main():
         CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
     )
 
+    # Голосовые — до текстового обработчика
+    app.add_handler(MessageHandler(filters.VOICE, dialog.handle_voice))
+
     # Основной диалог
     # Должен идти ПОСЛЕДНИМ, чтобы не перехватывать команды.
     app.add_handler(
