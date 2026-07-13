@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, create_user, update_user, log_event
 from bot import texts
+from bot.services.reminders import CUSTOM_TIME_KEY, prompt_custom_reminder_time
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,12 @@ async def handle_onboarding_button(update: Update, context: ContextTypes.DEFAULT
 
     # --- Выбрано время — шаг вызова ---
     elif step == "time":
+        if value == CUSTOM_TIME_KEY:
+            await query.edit_message_text(
+                f"{texts.ASK_TIME}\n\n✅ {texts.BTN_TIMES[value]}"
+            )
+            await prompt_custom_reminder_time(query.message, user_id)
+            return
         update_user(user_id, reminder_time=value, onboarding_step="streakgoal")
         await query.edit_message_text(
             f"{texts.ASK_TIME}\n\n✅ {texts.BTN_TIMES[value]}"

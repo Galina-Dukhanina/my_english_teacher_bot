@@ -147,7 +147,14 @@ BTN_TIMES = {
     "09:00": "Утро (9:00)",
     "14:00": "День (14:00)",
     "19:00": "Вечер (19:00)",
+    "custom": "Своё время",
 }
+ASK_CUSTOM_TIME = (
+    "Напиши время в формате ЧЧ:ММ — например 9:00 или 21:30. "
+    "Учитываю твой часовой пояс из настроек."
+)
+INVALID_CUSTOM_TIME = "Не получилось распознать время. Пример: 9:00 или 21:30."
+REMINDER_TIME_SAVED = "Готово! Буду напоминать в {time}."
 
 HELP = (
     "Вот что я умею.\n\n"
@@ -178,6 +185,17 @@ SETTINGS_SAVED = "Готово! Выбрано: {setting}"
 BTN_PRONOUNCE = "Как читается"
 BTN_MEANING = "Непонятно слово"
 BTN_LANG = "Язык правил"
+BTN_MAIN = "Главное меню"
+
+MAIN_MENU = "Выбери команду:"
+MAIN_MENU_ITEMS = {
+    "settings": "Настройки",
+    "reminders": "Напоминания",
+    "progress": "Прогресс",
+    "premium": "Premium",
+    "feedback": "Отзыв",
+    "help": "Справка",
+}
 
 # Тексты для инструментов
 ASK_WORD_PRONOUNCE = (
@@ -208,6 +226,16 @@ LANG_CHANGED = "Готово! Теперь правила объясняю: {lan
 
 # --- Меню активностей ---
 BTN_MENU = "Чем займемся?"
+
+MENU_BUTTONS = frozenset(
+    {
+        BTN_MENU,
+        BTN_PRONOUNCE,
+        BTN_MEANING,
+        BTN_LANG,
+        BTN_MAIN,
+    }
+)
 
 ACTIVITY_MENU = "Чем займемся?"
 

@@ -7,8 +7,10 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, update_user, log_event
 from bot import texts
+from bot import keyboards
 from bot.handlers import commands
 from bot.handlers.dialog import start_language
+from bot.services.reminders import CUSTOM_TIME_KEY, prompt_custom_reminder_time
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +67,14 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     log_event(user_id, "settings_open")
 
-    await update.message.reply_text(texts.SETTINGS_MENU, reply_markup=_settings_keyboard())
+    await update.message.reply_text(
+        texts.SETTINGS_MENU,
+        reply_markup=keyboards.main_keyboard(),
+    )
+    await update.message.reply_text(
+        "Выбери:",
+        reply_markup=_settings_keyboard(),
+    )
 
 
 async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -151,7 +160,14 @@ async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TY
         "settime": "reminder_time",
     }
 
-    if step not in labels or value not in labels[step]:
+    if step not in labels:
+        return
+
+    if step == "settime" and value == CUSTOM_TIME_KEY:
+        await prompt_custom_reminder_time(query.message, user_id)
+        return
+
+    if value not in labels[step]:
         return
 
     fields = {field_map[step]: value}

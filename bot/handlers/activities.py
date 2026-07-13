@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, set_activity, log_event, set_pending_action
 from bot import texts
+from bot import keyboards
 from bot.services.progress import record_activity, ACTIVITY_MENU
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,10 @@ async def show_activity_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     """Показать меню 'Чем займемся?'."""
     await update.message.reply_text(
         texts.ACTIVITY_MENU,
+        reply_markup=keyboards.main_keyboard(),
+    )
+    await update.message.reply_text(
+        "Выбери режим:",
         reply_markup=_activity_menu_keyboard(),
     )
 

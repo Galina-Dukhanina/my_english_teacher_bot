@@ -1,22 +1,102 @@
 """Отправка напоминаний пользователям."""
 
 import logging
+import re
 from datetime import datetime
 
 import pytz
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from bot import texts
+from bot import texts, keyboards
 from bot.services.challenge import get_challenge_status
 from database.db import (
     get_progress,
+    get_user,
     get_users_for_reminders,
+    log_event,
     reminder_sent_today,
     record_reminder_sent,
+    set_pending_action,
     update_user,
 )
 
 logger = logging.getLogger(__name__)
+
+CUSTOM_TIME_KEY = "custom"
+_TIME_RE = re.compile(r"^(\d{1,2}):(\d{2})$")
+
+
+def parse_reminder_time(text: str) -> str | None:
+    """Распознать время HH:MM или H:MM, вернуть нормализованное HH:MM."""
+    match = _TIME_RE.match(text.strip())
+    if not match:
+        return None
+    hours, minutes = int(match.group(1)), int(match.group(2))
+    if hours > 23 or minutes > 59:
+        return None
+    return f"{hours:02d}:{minutes:02d}"
+
+
+def reminder_time_label(value: str) -> str:
+    return texts.BTN_TIMES.get(value, value)
+
+
+def reminder_time_keyboard(prefix: str = "remtime") -> InlineKeyboardMarkup:
+    presets = [
+        (value, label)
+        for value, label in texts.BTN_TIMES.items()
+        if value != CUSTOM_TIME_KEY
+    ]
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(label, callback_data=f"{prefix}:{value}")
+                for value, label in presets
+            ],
+            [
+                InlineKeyboardButton(
+                    texts.BTN_TIMES[CUSTOM_TIME_KEY],
+                    callback_data=f"{prefix}:{CUSTOM_TIME_KEY}",
+                )
+            ],
+        ]
+    )
+
+
+async def prompt_custom_reminder_time(message, user_id: int):
+    set_pending_action(user_id, "wait_reminder_time")
+    await message.reply_text(texts.ASK_CUSTOM_TIME)
+
+
+async def submit_custom_reminder_time(update, context, user_id: int, text: str):
+    parsed = parse_reminder_time(text)
+    if not parsed:
+        await update.message.reply_text(texts.INVALID_CUSTOM_TIME)
+        return
+
+    user = get_user(user_id)
+    fields = {
+        "reminder_time": parsed,
+        "reminder_enabled": 1,
+    }
+    if user.get("onboarding_step") == "time" and not user["onboarding_done"]:
+        fields["onboarding_step"] = "streakgoal"
+    update_user(user_id, **fields)
+    set_pending_action(user_id, None)
+    log_event(user_id, "reminder_time_custom")
+
+    await update.message.reply_text(
+        texts.REMINDER_TIME_SAVED.format(time=parsed),
+        reply_markup=keyboards.main_keyboard(),
+    )
+
+    if fields.get("onboarding_step") == "streakgoal":
+        from bot.services.challenge import challenge_goal_keyboard
+
+        await update.message.reply_text(
+            texts.ASK_CHALLENGE,
+            reply_markup=challenge_goal_keyboard(),
+        )
 
 
 def _today_in_tz(timezone: str) -> str:

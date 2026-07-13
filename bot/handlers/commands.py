@@ -3,11 +3,71 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from database.db import get_user, update_user, log_event
-from bot import texts
+from bot import texts, keyboards
+from bot.services.reminders import (
+    CUSTOM_TIME_KEY,
+    prompt_custom_reminder_time,
+    reminder_time_keyboard,
+    reminder_time_label,
+)
 from bot.services.analytics import get_admin_stats, format_admin_stats
 from config import ADMIN_USER_ID, DAILY_COST_LIMIT_USD
 
 logger = logging.getLogger(__name__)
+
+
+class _MessageUpdate:
+    """Обёртка для вызова command-handler из callback-кнопки."""
+
+    def __init__(self, message, user):
+        self.message = message
+        self.effective_user = user
+
+
+async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать inline-меню команд."""
+    await keyboards.reply_main_menu(update.message)
+
+
+async def refresh_user_keyboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обновить нижнюю клавиатуру (/keyboard)."""
+    await update.message.reply_text(
+        "Готово — клавиатура обновлена.",
+        reply_markup=keyboards.main_keyboard(),
+    )
+
+
+async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка кнопок главного меню."""
+    query = update.callback_query
+    await query.answer()
+    action = query.data.split(":", 1)[1]
+    if action not in texts.MAIN_MENU_ITEMS:
+        return
+
+    from database.db import set_activity
+    from bot.handlers.settings import settings_command
+    from bot.handlers.premium import premium_command
+    from bot.handlers.feedback import feedback_command
+
+    user_id = query.from_user.id
+    set_activity(user_id, None)
+    log_event(user_id, f"mainmenu_{action}")
+
+    wrap = _MessageUpdate(query.message, query.from_user)
+
+    if action == "settings":
+        await settings_command(wrap, context)
+    elif action == "reminders":
+        await reminders_command(wrap, context)
+    elif action == "progress":
+        await progress_command(wrap, context)
+    elif action == "premium":
+        await premium_command(wrap, context)
+    elif action == "feedback":
+        await feedback_command(wrap, context)
+    elif action == "help":
+        await help_command(wrap, context)
 
 
 # ---------- /help ----------
@@ -15,7 +75,7 @@ logger = logging.getLogger(__name__)
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_event(update.effective_user.id, "help")
-    await update.message.reply_text(texts.HELP)
+    await update.message.reply_text(texts.HELP, reply_markup=keyboards.main_keyboard())
 
 
 # ---------- /progress ----------
@@ -37,7 +97,10 @@ async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = get_user(user_id)
 
     log_event(user_id, "progress_view")
-    await update.message.reply_text(format_progress_text(user_id))
+    await update.message.reply_text(
+        format_progress_text(user_id),
+        reply_markup=keyboards.main_keyboard(),
+    )
 
     user = get_user(user_id)
     if not user.get("challenge_days") or not user.get("challenge_start"):
@@ -106,7 +169,8 @@ async def reminders_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     enabled = user["reminder_enabled"]
     time = user["reminder_time"]
-    status = f"включены на {time}" if enabled else "выключены"
+    time_label = reminder_time_label(time) if time in texts.BTN_TIMES else time
+    status = f"включены на {time_label}" if enabled else "выключены"
 
     keyboard = []
     if enabled:
@@ -117,13 +181,7 @@ async def reminders_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard.append(
             [InlineKeyboardButton("Включить напоминания", callback_data="rem:on")]
         )
-    # Кнопки смены времени
-    keyboard.append(
-        [
-            InlineKeyboardButton(label, callback_data=f"remtime:{value}")
-            for value, label in texts.BTN_TIMES.items()
-        ]
-    )
+    keyboard.extend(reminder_time_keyboard("remtime").inline_keyboard)
 
     await update.message.reply_text(
         f"Напоминания сейчас {status}.\n\nМожешь изменить время или выключить:",
@@ -147,5 +205,10 @@ async def handle_reminders_button(update: Update, context: ContextTypes.DEFAULT_
             update_user(user_id, reminder_enabled=0)
             await query.edit_message_text("Напоминания выключены.")
     elif action == "remtime":
+        if value == CUSTOM_TIME_KEY:
+            await prompt_custom_reminder_time(query.message, user_id)
+            return
         update_user(user_id, reminder_time=value, reminder_enabled=1)
-        await query.edit_message_text(f"Готово! Буду напоминать в {value}.")
+        await query.edit_message_text(
+            texts.REMINDER_TIME_SAVED.format(time=reminder_time_label(value))
+        )

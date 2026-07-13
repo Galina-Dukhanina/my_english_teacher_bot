@@ -55,13 +55,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # --- Нажата кнопка? (одно определение на оба случая) ---
-    is_button = text in (
-        texts.BTN_MENU,
-        texts.BTN_PRONOUNCE,
-        texts.BTN_MEANING,
-        texts.BTN_LANG,
-    )
+    # --- Нажата кнопка клавиатуры? ---
+    is_button = text in texts.MENU_BUTTONS
 
     # --- Авто-показ меню при первом сообщении за день ---
     # Не показываем, если: это кнопка, бот чего-то ждет, ИЛИ пользователь уже в режиме.
@@ -77,11 +72,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Нажата кнопка? Сбрасываем зависшее ожидание ---
     if is_button:
-        set_pending_action(user_id, None)  # выход из любого ожидания
+        set_pending_action(user_id, None)
+        if text in (texts.BTN_MENU, texts.BTN_MAIN):
+            set_activity(user_id, None)
 
-    # --- Нажата кнопка-инструмент? ---
     if text == texts.BTN_MENU:
         await activities.show_activity_menu(update, context)
+        return
+    if text == texts.BTN_MAIN:
+        from bot.handlers.commands import show_main_menu
+
+        await show_main_menu(update, context)
         return
     if text == texts.BTN_PRONOUNCE:
         await start_pronounce(update, context, user_id)
@@ -153,6 +154,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from bot.handlers.vocab import handle_add_word_input
 
         await handle_add_word_input(update, context, user_id, text)
+        return
+
+    if pending == "wait_reminder_time":
+        from bot.services.reminders import submit_custom_reminder_time
+
+        await submit_custom_reminder_time(update, context, user_id, text)
         return
 
     # --- Свободный вопрос — отвечаем, не блокируем режимом ---

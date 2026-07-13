@@ -68,10 +68,14 @@ def main():
 
     # Команды
     app.add_handler(CommandHandler("help", commands.help_command))
+    app.add_handler(
+        CallbackQueryHandler(commands.handle_main_menu, pattern=r"^mainmenu:")
+    )
     app.add_handler(CommandHandler("settings", settings.settings_command))
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
     app.add_handler(CommandHandler("progress", commands.progress_command))
+    app.add_handler(CommandHandler("keyboard", commands.refresh_user_keyboard))
     app.add_handler(CommandHandler("stats", commands.stats_command))
     app.add_handler(CommandHandler("premium", premium.premium_command))
     app.add_handler(CommandHandler("grant_premium", premium.grant_premium_command))
