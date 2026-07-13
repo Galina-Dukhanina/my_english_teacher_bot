@@ -25,30 +25,31 @@ def _buttons_from_dict(options: dict, prefix: str):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    create_user(user.id, user.username, user.first_name)
-    log_event(user.id, "start")
+    tg_user = update.effective_user
+    user_id = tg_user.id
+    create_user(user_id, tg_user.username, tg_user.first_name)
+    log_event(user_id, "start")
 
-    existing = get_user(user.id)
+    existing = get_user(user_id)
     if existing and existing["onboarding_done"]:
         from bot.handlers.challenge import maybe_send_challenge_completion
         from bot.keyboards import main_keyboard
         from bot.services.challenge import challenge_goal_keyboard
         from bot.services.progress import format_welcome_back
 
-        if await maybe_send_challenge_completion(update, user.id):
+        if await maybe_send_challenge_completion(update, user_id):
             await update.message.reply_text(
-                format_welcome_back(user.id),
+                format_welcome_back(user_id),
                 reply_markup=main_keyboard(),
             )
             return
 
-        user = get_user(user.id)
+        profile = get_user(user_id)
         await update.message.reply_text(
-            format_welcome_back(user.id),
+            format_welcome_back(user_id),
             reply_markup=main_keyboard(),
         )
-        if not user.get("challenge_days") or not user.get("challenge_start"):
+        if not profile.get("challenge_days") or not profile.get("challenge_start"):
             await update.message.reply_text(
                 texts.ASK_CHALLENGE,
                 reply_markup=challenge_goal_keyboard(),
@@ -56,7 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Первый визит — онбординг
-    update_user(user.id, onboarding_step="terms")
+    update_user(user_id, onboarding_step="terms")
     await update.message.reply_text(texts.WELCOME)
 
     keyboard = InlineKeyboardMarkup(
