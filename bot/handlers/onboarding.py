@@ -29,11 +29,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     create_user(user.id, user.username, user.first_name)
     log_event(user.id, "start")
 
-    # Начинаем онбординг с приветствия
+    existing = get_user(user.id)
+    if existing and existing["onboarding_done"]:
+        from bot.keyboards import main_keyboard
+
+        await update.message.reply_text(
+            texts.WELCOME_BACK,
+            reply_markup=main_keyboard(),
+        )
+        return
+
+    # Первый визит — онбординг
     update_user(user.id, onboarding_step="terms")
     await update.message.reply_text(texts.WELCOME)
 
-    # Показываем согласие с условиями
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton(texts.BTN_ACCEPT, callback_data="terms:accept")]]
     )

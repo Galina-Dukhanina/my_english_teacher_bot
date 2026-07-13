@@ -24,7 +24,8 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium, vocab
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium, vocab, settings
+from bot.handlers.text_commands import text_command_handler
 from bot.middleware.error_handler import global_error_handler
 from bot.scheduler import start_scheduler, stop_scheduler
 from bot.services.reminders import handle_reminder_off
@@ -62,6 +63,7 @@ def main():
 
     # Команды
     app.add_handler(CommandHandler("help", commands.help_command))
+    app.add_handler(CommandHandler("settings", settings.settings_command))
     app.add_handler(CommandHandler("style", commands.style_command))
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
@@ -70,6 +72,16 @@ def main():
     app.add_handler(CommandHandler("premium", premium.premium_command))
     app.add_handler(CommandHandler("grant_premium", premium.grant_premium_command))
     app.add_handler(CommandHandler("addword", vocab.addword_command))
+
+    app.add_handler(
+        CallbackQueryHandler(settings.handle_settings_callback, pattern=r"^settings:")
+    )
+    app.add_handler(
+        CallbackQueryHandler(
+            settings.handle_profile_button,
+            pattern=r"^set(level|goal|timezone|time):",
+        )
+    )
 
     # Кнопки команд (вне онбординга)
     app.add_handler(
@@ -125,6 +137,9 @@ def main():
     app.add_handler(
         CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
     )
+
+    # Русские текстовые команды («Настройки», «Справка» …)
+    app.add_handler(text_command_handler())
 
     # Основной диалог
     # Должен идти ПОСЛЕДНИМ, чтобы не перехватывать команды.
