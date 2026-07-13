@@ -132,6 +132,33 @@ async def _handle_premium_plan(update: Update, context: ContextTypes.DEFAULT_TYP
         )
     elif response.message:
         await query.edit_message_text(response.message)
+        if PAYMENT_PROVIDER == "manual" and ADMIN_USER_ID and user_id != ADMIN_USER_ID:
+            user = query.from_user
+            name = user.first_name or "Пользователь"
+            username = f"@{user.username}" if user.username else f"id:{user_id}"
+            try:
+                await context.bot.send_message(
+                    chat_id=ADMIN_USER_ID,
+                    text=(
+                        f"💳 Заявка на Premium\n\n"
+                        f"От: {name} ({username})\n"
+                        f"Тариф: {description}\n\n"
+                        f"/grant_premium {user_id}"
+                    ),
+                )
+            except Exception as e:
+                logger.error(f"Не удалось уведомить admin о premium: {e}")
+        elif PAYMENT_PROVIDER == "manual" and ADMIN_USER_ID and user_id == ADMIN_USER_ID:
+            try:
+                await context.bot.send_message(
+                    chat_id=ADMIN_USER_ID,
+                    text=(
+                        f"💳 Заявка на Premium (твой аккаунт)\n"
+                        f"/grant_premium {user_id}"
+                    ),
+                )
+            except Exception as e:
+                logger.error(f"Не удалось уведомить admin о premium: {e}")
     else:
         await query.edit_message_text(texts.PREMIUM_PAY_ERROR)
 

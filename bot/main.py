@@ -24,8 +24,7 @@ from telegram.ext import (
 )
 from config import BOT_TOKEN, PROXY_URL
 from database.db import init_db
-from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium, vocab, settings
-from bot.handlers.text_commands import text_command_handler
+from bot.handlers import onboarding, commands, dialog, activities, cards, grammar, feedback, premium, vocab, settings, challenge
 from bot.middleware.error_handler import global_error_handler
 from bot.scheduler import start_scheduler, stop_scheduler
 from bot.services.reminders import handle_reminder_off
@@ -52,19 +51,24 @@ def main():
     app = builder.build()
     app.add_error_handler(global_error_handler)
 
-    # Онбординг
+    # Онбординг и вызов
+    app.add_handler(
+        CallbackQueryHandler(
+            challenge.handle_streak_goal,
+            pattern=r"^streakgoal:",
+        )
+    )
     app.add_handler(CommandHandler("start", onboarding.start))
     app.add_handler(
         CallbackQueryHandler(
             onboarding.handle_onboarding_button,
-            pattern=r"^(terms|level|goal|style|timezone|time):",
+            pattern=r"^(terms|level|goal|timezone|time):",
         )
     )
 
     # Команды
     app.add_handler(CommandHandler("help", commands.help_command))
     app.add_handler(CommandHandler("settings", settings.settings_command))
-    app.add_handler(CommandHandler("style", commands.style_command))
     app.add_handler(CommandHandler("reminders", commands.reminders_command))
     app.add_handler(CommandHandler("feedback", feedback.feedback_command))
     app.add_handler(CommandHandler("progress", commands.progress_command))
@@ -84,9 +88,6 @@ def main():
     )
 
     # Кнопки команд (вне онбординга)
-    app.add_handler(
-        CallbackQueryHandler(commands.handle_style_button, pattern=r"^setstyle:")
-    )
     app.add_handler(
         CallbackQueryHandler(
             commands.handle_reminders_button, pattern=r"^(rem|remtime):"
@@ -137,9 +138,6 @@ def main():
     app.add_handler(
         CallbackQueryHandler(dialog.handle_language_button, pattern=r"^setlang:")
     )
-
-    # Русские текстовые команды («Настройки», «Справка» …)
-    app.add_handler(text_command_handler())
 
     # Основной диалог
     # Должен идти ПОСЛЕДНИМ, чтобы не перехватывать команды.

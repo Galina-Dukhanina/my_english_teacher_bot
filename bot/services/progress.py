@@ -1,10 +1,11 @@
-"""Прогресс пользователя и streak."""
+"""Прогресс пользователя и вызов на дни без пропусков."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytz
 
 from database.db import (
+    count_challenge_active_days,
     get_progress,
     get_user,
     get_vocab_stats,
@@ -12,6 +13,7 @@ from database.db import (
     update_progress,
     sync_progress_words,
 )
+from bot.services.challenge import format_challenge_line, mark_active_today
 
 ACTIVITY_DIALOG = "dialog"
 ACTIVITY_WORDS = "words_session"
@@ -25,38 +27,24 @@ def _today_in_tz(timezone: str) -> str:
     return datetime.now(tz).date().isoformat()
 
 
-def _yesterday_in_tz(timezone: str) -> str:
-    tz = pytz.timezone(timezone or "Europe/Moscow")
-    return (datetime.now(tz).date() - timedelta(days=1)).isoformat()
-
-
-def _calc_streak(current_streak: int, last_active: str | None, today: str, yesterday: str) -> int:
-    if last_active == today:
-        return current_streak
-    if last_active == yesterday:
-        return max(current_streak, 0) + 1
-    return 1
-
-
 def record_activity(user_id: int, activity_type: str):
-    """Обновить streak и счётчики после осмысленной активности."""
+    """Обновить счётчики и отметить активный день вызова."""
     user = get_user(user_id)
     if not user:
         return
 
     tz = user.get("timezone") or "Europe/Moscow"
     today = _today_in_tz(tz)
-    yesterday = _yesterday_in_tz(tz)
 
     progress = get_progress(user_id) or {}
-    streak = _calc_streak(
-        progress.get("streak_days") or 0,
-        progress.get("last_active"),
-        today,
-        yesterday,
-    )
+    updates = {"last_active": today}
 
-    updates = {"last_active": today, "streak_days": streak}
+    # streak_days = активные дни в текущем вызове (для напоминаний и совместимости)
+    if user.get("challenge_days") and user.get("challenge_start"):
+        mark_active_today(user_id)
+        updates["streak_days"] = count_challenge_active_days(
+            user_id, user["challenge_start"], today
+        )
 
     if activity_type == ACTIVITY_DIALOG:
         updates["total_messages"] = (progress.get("total_messages") or 0) + 1
@@ -84,7 +72,37 @@ def get_progress_summary(user_id: int) -> dict:
         "mastered_words": vocab.get("learned") or 0,
         "to_review": count_words_to_review(user_id),
         "total_messages": progress.get("total_messages") or 0,
+        "has_challenge": bool(user.get("challenge_days") and user.get("challenge_start")),
     }
+
+
+def format_progress_text(user_id: int) -> str:
+    """Форматированный блок прогресса."""
+    from bot import texts
+
+    summary = get_progress_summary(user_id)
+    challenge_line = format_challenge_line(user_id)
+    if challenge_line:
+        streak_block = challenge_line
+    elif summary.get("has_challenge"):
+        streak_block = "🎯 Вызов: данные обновляются..."
+    else:
+        streak_block = texts.CHALLENGE_NONE
+
+    return texts.PROGRESS.format(
+        streak_block=streak_block,
+        new_words=summary.get("new_words", 0),
+        mastered_words=summary.get("mastered_words", 0),
+        to_review=summary.get("to_review", 0),
+        total_messages=summary.get("total_messages", 0),
+    )
+
+
+def format_welcome_back(user_id: int) -> str:
+    """Приветствие при /start с блоком прогресса."""
+    from bot import texts
+
+    return f"{texts.WELCOME_BACK}\n\n{format_progress_text(user_id)}"
 
 
 def streak_label(days: int) -> str:

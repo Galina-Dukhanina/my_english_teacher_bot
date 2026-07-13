@@ -21,7 +21,17 @@ CREATE TABLE IF NOT EXISTS users (
     current_activity TEXT DEFAULT NULL,
     current_topic    TEXT DEFAULT NULL,
     last_menu_date   TEXT DEFAULT NULL,
+    challenge_days   INTEGER DEFAULT NULL,
+    challenge_start  TEXT DEFAULT NULL,
     created_at       TEXT DEFAULT (datetime('now'))
+);
+
+-- Активные дни в рамках вызова (без пропусков)
+CREATE TABLE IF NOT EXISTS challenge_active_days (
+    user_id      INTEGER NOT NULL,
+    active_date  TEXT NOT NULL,
+    PRIMARY KEY (user_id, active_date),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 -- Прогресс и удержание (1:1 с users)

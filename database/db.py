@@ -57,6 +57,8 @@ def migrate_db():
             "current_activity": "TEXT",
             "current_topic": "TEXT",
             "last_menu_date": "TEXT",
+            "challenge_days": "INTEGER",
+            "challenge_start": "TEXT",
         },
         "vocabulary": {
             "transcription": "TEXT",
@@ -106,6 +108,16 @@ def migrate_db():
             payload    TEXT NOT NULL,
             updated_at TEXT DEFAULT (datetime('now')),
             PRIMARY KEY (user_id, kind),
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS challenge_active_days (
+            user_id      INTEGER NOT NULL,
+            active_date  TEXT NOT NULL,
+            PRIMARY KEY (user_id, active_date),
             FOREIGN KEY (user_id) REFERENCES users(user_id)
         )
         """
@@ -263,6 +275,32 @@ def update_progress(user_id, **fields):
     conn.execute(f"UPDATE progress SET {columns} WHERE user_id = ?", values)
     conn.commit()
     conn.close()
+
+
+# ---------- Вызов на дни без пропусков ----------
+
+
+def mark_challenge_active_day(user_id, active_date):
+    """Отметить день как активный в вызове."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT OR IGNORE INTO challenge_active_days (user_id, active_date) VALUES (?, ?)",
+        (user_id, active_date),
+    )
+    conn.commit()
+    conn.close()
+
+
+def count_challenge_active_days(user_id, start_date, end_date):
+    """Число активных дней в периоде [start_date, end_date] включительно."""
+    conn = get_connection()
+    row = conn.execute(
+        """SELECT COUNT(*) AS cnt FROM challenge_active_days
+           WHERE user_id = ? AND active_date >= ? AND active_date <= ?""",
+        (user_id, start_date, end_date),
+    ).fetchone()
+    conn.close()
+    return row["cnt"] or 0
 
 
 def sync_progress_words(user_id):

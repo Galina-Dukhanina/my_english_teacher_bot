@@ -31,12 +31,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     existing = get_user(user.id)
     if existing and existing["onboarding_done"]:
+        from bot.handlers.challenge import maybe_send_challenge_completion
         from bot.keyboards import main_keyboard
+        from bot.services.challenge import challenge_goal_keyboard
+        from bot.services.progress import format_welcome_back
 
+        if await maybe_send_challenge_completion(update, user.id):
+            await update.message.reply_text(
+                format_welcome_back(user.id),
+                reply_markup=main_keyboard(),
+            )
+            return
+
+        user = get_user(user.id)
         await update.message.reply_text(
-            texts.WELCOME_BACK,
+            format_welcome_back(user.id),
             reply_markup=main_keyboard(),
         )
+        if not user.get("challenge_days") or not user.get("challenge_start"):
+            await update.message.reply_text(
+                texts.ASK_CHALLENGE,
+                reply_markup=challenge_goal_keyboard(),
+            )
         return
 
     # Первый визит — онбординг
@@ -89,20 +105,9 @@ async def handle_onboarding_button(update: Update, context: ContextTypes.DEFAULT
 
     # --- Выбрана цель ---
     elif step == "goal":
-        update_user(user_id, goal=value, onboarding_step="style")
+        update_user(user_id, goal=value, style="friendly", onboarding_step="timezone")
         await query.edit_message_text(
             f"{texts.ASK_GOAL}\n\n✅ {texts.BTN_GOALS[value]}"
-        )
-        await query.message.reply_text(
-            texts.ASK_STYLE,
-            reply_markup=_buttons_from_dict(texts.BTN_STYLES, "style"),
-        )
-
-    # --- Выбран стиль ---
-    elif step == "style":
-        update_user(user_id, style=value, onboarding_step="timezone")
-        await query.edit_message_text(
-            f"{texts.ASK_STYLE}\n\n✅ {texts.BTN_STYLES[value]}"
         )
         await query.message.reply_text(
             texts.ASK_TIMEZONE,
@@ -120,21 +125,13 @@ async def handle_onboarding_button(update: Update, context: ContextTypes.DEFAULT
             reply_markup=_buttons_from_dict(texts.BTN_TIMES, "time"),
         )
 
-    # --- Выбрано время занятий — финал ---
+    # --- Выбрано время — шаг вызова ---
     elif step == "time":
-        update_user(
-            user_id,
-            reminder_time=value,
-            onboarding_step="done",
-            onboarding_done=1,
-        )
-        log_event(user_id, "onboarding_done")
+        update_user(user_id, reminder_time=value, onboarding_step="streakgoal")
         await query.edit_message_text(
             f"{texts.ASK_TIME}\n\n✅ {texts.BTN_TIMES[value]}"
         )
-        from bot.keyboards import main_keyboard
-
         await query.message.reply_text(
-            texts.ONBOARDING_DONE,
-            reply_markup=main_keyboard(),
+            texts.ASK_CHALLENGE,
+            reply_markup=_buttons_from_dict(texts.BTN_CHALLENGE_DAYS, "streakgoal"),
         )

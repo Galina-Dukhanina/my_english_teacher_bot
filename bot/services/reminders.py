@@ -7,6 +7,7 @@ import pytz
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot import texts
+from bot.services.challenge import get_challenge_status
 from database.db import (
     get_progress,
     get_users_for_reminders,
@@ -49,10 +50,12 @@ def get_users_due_for_reminder() -> list[dict]:
 
 
 def build_reminder_text(user_id: int) -> str:
-    progress = get_progress(user_id) or {}
-    streak = progress.get("streak_days") or 0
-    if streak > 1:
-        return texts.REMINDER_STREAK.format(streak=streak)
+    status = get_challenge_status(user_id)
+    if status.get("status") == "active" and status.get("active_days", 0) > 0:
+        return texts.REMINDER_STREAK.format(
+            active=status["active_days"],
+            goal=status["goal_days"],
+        )
     return texts.REMINDER_DEFAULT
 
 

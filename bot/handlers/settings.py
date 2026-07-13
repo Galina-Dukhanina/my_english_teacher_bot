@@ -24,7 +24,6 @@ async def _require_onboarding(update: Update) -> bool:
 def _settings_keyboard():
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton(texts.BTN_SETTINGS_STYLE, callback_data="settings:style")],
             [InlineKeyboardButton(texts.BTN_SETTINGS_LANG, callback_data="settings:lang")],
             [InlineKeyboardButton(texts.BTN_SETTINGS_LEVEL, callback_data="settings:level")],
             [InlineKeyboardButton(texts.BTN_SETTINGS_GOAL, callback_data="settings:goal")],
@@ -36,6 +35,11 @@ def _settings_keyboard():
             [
                 InlineKeyboardButton(
                     texts.BTN_SETTINGS_REMINDERS, callback_data="settings:reminders"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    texts.BTN_SETTINGS_CHALLENGE, callback_data="settings:challenge"
                 )
             ],
         ]
@@ -81,13 +85,6 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         )
         return
 
-    if action == "style":
-        await query.edit_message_text(
-            texts.ASK_STYLE,
-            reply_markup=_buttons_from_dict(texts.BTN_STYLES, "setstyle"),
-        )
-        return
-
     if action == "lang":
 
         class _Wrap:
@@ -123,6 +120,15 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
             message = query.message
 
         await commands.reminders_command(_Wrap(), context)
+        return
+
+    if action == "challenge":
+        from bot.services.challenge import challenge_goal_keyboard
+
+        await query.edit_message_text(
+            texts.ASK_CHALLENGE,
+            reply_markup=challenge_goal_keyboard(),
+        )
 
 
 async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TYPE):

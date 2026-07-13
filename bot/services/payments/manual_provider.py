@@ -2,6 +2,7 @@
 
 import uuid
 
+from bot import texts
 from bot.services.payments import PaymentRequest, PaymentResponse
 from database.db import create_payment_record
 
@@ -21,9 +22,5 @@ class ManualProvider:
         return PaymentResponse(
             provider_payment_id=payment_id,
             payment_url=None,
-            message=(
-                "Режим ручной оплаты.\n"
-                "После перевода admin активирует Premium командой "
-                f"/grant_premium {request.user_id}"
-            ),
+            message=texts.PREMIUM_MANUAL_USER,
         )

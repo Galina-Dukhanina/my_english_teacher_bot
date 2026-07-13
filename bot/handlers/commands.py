@@ -4,7 +4,6 @@ from telegram.ext import ContextTypes
 
 from database.db import get_user, update_user, log_event
 from bot import texts
-from bot.services.progress import get_progress_summary, streak_label
 from bot.services.analytics import get_admin_stats, format_admin_stats
 from config import ADMIN_USER_ID, DAILY_COST_LIMIT_USD
 
@@ -23,25 +22,29 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Показать прогресс и streak пользователя."""
+    """Показать прогресс и вызов пользователя."""
     user_id = update.effective_user.id
     user = get_user(user_id)
     if not user or not user["onboarding_done"]:
         await update.message.reply_text("Сначала пройди онбординг: /start")
         return
 
-    summary = get_progress_summary(user_id)
+    from bot.handlers.challenge import maybe_send_challenge_completion
+    from bot.services.challenge import challenge_goal_keyboard
+    from bot.services.progress import format_progress_text
+
+    if await maybe_send_challenge_completion(update, user_id):
+        user = get_user(user_id)
+
     log_event(user_id, "progress_view")
-    await update.message.reply_text(
-        texts.PROGRESS.format(
-            streak_days=summary["streak_days"],
-            streak_label=streak_label(summary["streak_days"]),
-            new_words=summary["new_words"],
-            mastered_words=summary["mastered_words"],
-            to_review=summary["to_review"],
-            total_messages=summary["total_messages"],
+    await update.message.reply_text(format_progress_text(user_id))
+
+    user = get_user(user_id)
+    if not user.get("challenge_days") or not user.get("challenge_start"):
+        await update.message.reply_text(
+            texts.ASK_CHALLENGE,
+            reply_markup=challenge_goal_keyboard(),
         )
-    )
 
 
 # ---------- /stats (admin) ----------
