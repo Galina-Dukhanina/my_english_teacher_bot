@@ -63,5 +63,9 @@ def start_scheduler(app):
 def stop_scheduler():
     global _scheduler
     if _scheduler:
-        _scheduler.shutdown(wait=False)
+        try:
+            _scheduler.shutdown(wait=False)
+        except RuntimeError:
+            # Event loop уже закрыт после run_polling — безопасно игнорируем
+            pass
         _scheduler = None

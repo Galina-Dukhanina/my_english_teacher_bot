@@ -410,17 +410,6 @@ ADDWORD_FORMAT = (
 )
 ADDWORD_SAVED = "✅ Добавлено: {word} — {translation}"
 
-# --- Активный режим ---
-ACTIVITY_BUSY = (
-    "Сейчас активен режим «{activity}». "
-    "Заверши задание кнопкой ⏹ или нажми «{menu}», чтобы выбрать другое."
-)
-ACTIVITY_NAMES = {
-    "words": "Учить слова",
-    "review": "Повторить слова",
-    "grammar": "Грамматика",
-}
-
 PREMIUM_EXPIRED = (
     "Срок Premium истёк — снова действуют бесплатные лимиты.\n"
     "Продлить: /premium"

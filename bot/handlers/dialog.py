@@ -12,6 +12,8 @@ from database.db import (
     update_user,
     should_show_menu,
     mark_menu_shown,
+    set_activity,
+    set_topic,
 )
 
 from bot import memory, prompts, texts, keyboards
@@ -123,8 +125,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if pending == "wait_topic":
         set_pending_action(user_id, None)
-        from database.db import set_activity, set_topic
-
         set_activity(user_id, "talk")
         set_topic(user_id, text)
         await update.message.reply_text(
@@ -155,19 +155,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_add_word_input(update, context, user_id, text)
         return
 
-    # --- Активный режим (кроме talk): подсказка, не уводим в свободный диалог ---
+    # --- Свободный вопрос — отвечаем, не блокируем режимом ---
     activity = user.get("current_activity")
-    if activity and activity != "talk" and activity in texts.ACTIVITY_NAMES:
-        await update.message.reply_text(
-            texts.ACTIVITY_BUSY.format(
-                activity=texts.ACTIVITY_NAMES[activity],
-                menu=texts.BTN_MENU,
-            ),
-            reply_markup=keyboards.main_keyboard(),
-        )
-        return
+    if activity and activity != "talk":
+        set_activity(user_id, None)
 
-    # --- Обычный диалог ---
     await _send_ai_reply(update, context, user_id, user, user_text=text)
 
 
