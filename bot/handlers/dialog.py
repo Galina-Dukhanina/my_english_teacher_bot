@@ -182,6 +182,8 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
             reply_markup=keyboards.premium_upsell_keyboard(),
         )
         return None
+
+    user = get_user(user_id) or user
     # Собираем системный промпт с учетом языка объяснений
     system_prompt = prompts.build_system_prompt(
         style=user["style"],

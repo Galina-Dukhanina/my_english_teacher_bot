@@ -59,11 +59,9 @@ STYLE_PROMPTS = {
 LEVEL_PROMPTS = {
     "beginner": """УРОВЕНЬ УЧЕНИКА: начинающий.
 Используй очень простой английский: короткие фразы, базовая лексика, простые времена.
-Когда объясняешь — делай это в основном на русском, английский добавляй дозированно.
 Будь особенно терпеливым и подбадривай за каждый шаг.""",
     "intermediate": """УРОВЕНЬ УЧЕНИКА: средний.
-Можешь использовать английский более свободно, но следи, чтобы тебя было легко понять.
-Объясняй на русском то, что сложно, остальное можно по-английски.
+Можешь использовать английский более свободно в диалоге, но следи, чтобы тебя было легко понять.
 Помогай расширять словарный запас и усложнять конструкции.""",
     "advanced": """УРОВЕНЬ УЧЕНИКА: продвинутый.
 Общайся в основном на английском, естественно и бегло.
@@ -76,9 +74,39 @@ LEVEL_PROMPTS = {
 
 # --- Блоки языка объяснений ---
 LANGUAGE_PROMPTS = {
-    "ru": "КРИТИЧЕСКИ ВАЖНО ПРО ЯЗЫК: все объяснения, пояснения и комментарии давай на РУССКОМ языке. Английскими могут быть только примеры фраз и слова, которые ты разбираешь.",
-    "en": "CRITICALLY IMPORTANT ABOUT LANGUAGE: give ALL your explanations, comments and grammar notes in ENGLISH only. Use simple, clear English suitable for the student's level. Do NOT explain in Russian.",
-    "both": "КРИТИЧЕСКИ ВАЖНО ПРО ЯЗЫК: давай каждое объяснение на ДВУХ языках. Сначала на русском, затем то же самое на английском (пометь как 'In English:'). Это обязательно для каждого пояснения.",
+    "ru": (
+        "КРИТИЧЕСКИ ВАЖНО ПРО ЯЗЫК ОБЪЯСНЕНИЙ: правила, исправления и комментарии к ошибкам "
+        "давай ТОЛЬКО на РУССКОМ. Английскими могут быть только примеры фраз и слова, которые разбираешь."
+    ),
+    "en": (
+        "CRITICALLY IMPORTANT ABOUT LANGUAGE: give ALL corrections, grammar notes and error "
+        "comments in ENGLISH only. Use simple, clear English suitable for the student's level. "
+        "Do NOT explain rules in Russian."
+    ),
+    "both": (
+        "КРИТИЧЕСКИ ВАЖНО ПРО ЯЗЫК: каждое исправление и объяснение правила давай на ДВУХ языках. "
+        "Сначала на русском, затем то же самое на английском (пометь как 'In English:'). "
+        "Это обязательно для каждого пояснения."
+    ),
+}
+
+RESPONSE_FORMAT_BY_LANG = {
+    "ru": """СТРУКТУРА ОТВЕТА (язык объяснений — русский):
+1. Основной ответ в диалоге — на английском, если пользователь пишет на английском.
+2. Исправления и объяснение правил — ОТДЕЛЬНЫМ блоком ТОЛЬКО на русском после ответа.
+   Формат:
+   [английский ответ на сообщение]
+
+   Исправление: [правильная фраза]
+   [1-2 предложения правила на русском]
+3. ЗАПРЕЩЕНО: Explanation, Correction, Note и пояснения правил на английском.""",
+    "en": """RESPONSE STRUCTURE (explanations in English):
+1. Keep the conversation in English.
+2. Corrections and grammar notes — in English after your reply.
+   Do NOT explain rules in Russian.""",
+    "both": """СТРУКТУРА ОТВЕТА (объяснения на двух языках):
+1. Диалог — на английском, если пользователь пишет на английском.
+2. Блок исправления: сначала на русском, затем 'In English:' с тем же смыслом.""",
 }
 
 # Какой язык объяснений выбрать по уровню, если стоит "auto"
@@ -102,8 +130,12 @@ def build_system_prompt(
     else:
         lang = explanation_language
     lang_block = LANGUAGE_PROMPTS.get(lang, LANGUAGE_PROMPTS["ru"])
+    format_block = RESPONSE_FORMAT_BY_LANG.get(lang, RESPONSE_FORMAT_BY_LANG["ru"])
 
-    prompt = f"{BASE_PROMPT}\n\n{style_block}\n\n{level_block}\n\n{lang_block}"
+    prompt = (
+        f"{BASE_PROMPT}\n\n{style_block}\n\n{level_block}\n\n"
+        f"{lang_block}\n\n{format_block}"
+    )
 
     # Если идет разговор по теме — добавляем инструкцию
     if topic:
