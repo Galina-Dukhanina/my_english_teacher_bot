@@ -24,6 +24,12 @@ PREMIUM_PRICE_MONTH = float(os.getenv("PREMIUM_PRICE_MONTH", "299"))
 PREMIUM_PRICE_YEAR = float(os.getenv("PREMIUM_PRICE_YEAR", "2490"))
 PREMIUM_DAYS_MONTH = int(os.getenv("PREMIUM_DAYS_MONTH", "30"))
 PREMIUM_DAYS_YEAR = int(os.getenv("PREMIUM_DAYS_YEAR", "365"))
+# false — показываем заглушку «Premium скоро», оплата недоступна
+PREMIUM_SALES_ENABLED = os.getenv("PREMIUM_SALES_ENABLED", "false").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 PAYMENT_RETURN_URL = os.getenv("PAYMENT_RETURN_URL", "https://t.me")
 YOOKASSA_SHOP_ID = os.getenv("YOOKASSA_SHOP_ID", "")
 YOOKASSA_SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY", "")

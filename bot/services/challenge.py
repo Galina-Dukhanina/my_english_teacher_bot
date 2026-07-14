@@ -155,18 +155,18 @@ def format_challenge_line(user_id: int) -> str | None:
     active = status["active_days"]
     goal = status["goal_days"]
     missed = status["missed_days"]
-    remaining = status["remaining_days"]
+    remaining = max(0, goal - active)
     encouragement = status["encouragement"]
 
     if missed == 0:
         return (
-            f"🎯 {active} из {goal}. "
+            f"🎯 Активных дней: {active} из {goal}. "
             f"Осталось {remaining} {days_label(remaining)}. {encouragement}"
         )
     return (
-        f"🎯 {active} из {goal}. "
-        f"{missed} {skip_label(missed)} пропуска и остался {remaining} "
-        f"{days_label(remaining)}. {encouragement}"
+        f"🎯 Активных дней: {active} из {goal}. "
+        f"{missed} {skip_label(missed)} пропуска — "
+        f"ещё нужно {remaining} {days_label(remaining)}. {encouragement}"
     )
 
 

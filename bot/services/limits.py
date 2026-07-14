@@ -68,3 +68,38 @@ def get_limit_message(result: LimitResult) -> str:
     }
     template = templates.get(result.action, texts.LIMIT_GENERIC)
     return template.format(used=result.used, limit=result.limit)
+
+
+def format_daily_limits_block(user_id: int) -> str:
+    """Блок дневных лимитов для /progress."""
+    from bot import texts
+
+    if is_premium(user_id):
+        return (
+            f"{texts.PROGRESS_LIMITS_SEPARATOR}\n\n{texts.PROGRESS_LIMITS_PREMIUM}"
+        )
+
+    date_str = get_user_local_date(user_id)
+    usage = get_usage_limits(user_id, date_str)
+
+    lines = [
+        texts.PROGRESS_LIMITS_SEPARATOR,
+        "",
+        texts.PROGRESS_LIMITS_HEADER,
+        texts.PROGRESS_LIMIT_MESSAGES.format(
+            used=usage.get("messages_used") or 0,
+            limit=FREE_LIMIT_MESSAGES,
+        ),
+        texts.PROGRESS_LIMIT_WORDS.format(
+            used=usage.get("words_sessions_used") or 0,
+            limit=FREE_LIMIT_WORDS_SESSIONS,
+        ),
+        texts.PROGRESS_LIMIT_GRAMMAR.format(
+            used=usage.get("grammar_exercises_used") or 0,
+            limit=FREE_LIMIT_GRAMMAR_EXERCISES,
+        ),
+        "",
+        texts.PROGRESS_LIMITS_SEPARATOR,
+        texts.PROGRESS_LIMITS_FOOTNOTE,
+    ]
+    return "\n".join(lines)

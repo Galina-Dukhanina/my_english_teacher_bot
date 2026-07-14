@@ -14,8 +14,10 @@ from database.db import (
     sync_progress_words,
 )
 from bot.services.challenge import format_challenge_line, mark_active_today
+from bot.services.limits import format_daily_limits_block
 
 ACTIVITY_DIALOG = "dialog"
+ACTIVITY_TOOL = "tool"
 ACTIVITY_WORDS = "words_session"
 ACTIVITY_REVIEW = "review_session"
 ACTIVITY_GRAMMAR = "grammar"
@@ -50,6 +52,8 @@ def record_activity(user_id: int, activity_type: str):
         updates["total_messages"] = (progress.get("total_messages") or 0) + 1
     elif activity_type in (ACTIVITY_WORDS, ACTIVITY_REVIEW, ACTIVITY_GRAMMAR, ACTIVITY_MENU):
         updates["total_dialogs"] = (progress.get("total_dialogs") or 0) + 1
+    elif activity_type == ACTIVITY_TOOL:
+        pass  # только last_active и день вызова
 
     update_progress(user_id, **updates)
 
@@ -71,7 +75,6 @@ def get_progress_summary(user_id: int) -> dict:
         "new_words": vocab.get("total") or 0,
         "mastered_words": vocab.get("learned") or 0,
         "to_review": count_words_to_review(user_id),
-        "total_messages": progress.get("total_messages") or 0,
         "has_challenge": bool(user.get("challenge_days") and user.get("challenge_start")),
     }
 
@@ -94,7 +97,7 @@ def format_progress_text(user_id: int) -> str:
         new_words=summary.get("new_words", 0),
         mastered_words=summary.get("mastered_words", 0),
         to_review=summary.get("to_review", 0),
-        total_messages=summary.get("total_messages", 0),
+        limits_block=format_daily_limits_block(user_id),
     )
 
 

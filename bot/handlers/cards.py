@@ -149,6 +149,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     # Слова НЕ сохраняем сразу — сохраним только те, что пользователь "не знал"
     log_event(user_id, "words_session")
+    record_activity(user_id, ACTIVITY_WORDS)
     session["words"] = words
     session["index"] = 0
     session["knew"] = 0
@@ -324,11 +325,6 @@ async def _finish_session(message, user_id):
     set_activity(user_id, None)
 
     if mode == "review":
-        record_activity(user_id, ACTIVITY_REVIEW)
-    else:
-        record_activity(user_id, ACTIVITY_WORDS)
-
-    if mode == "review":
         mastered = session.get("mastered_now", 0)
         text = texts.REVIEW_DONE.format(total=total, knew=knew, mastered=mastered)
     else:
@@ -378,8 +374,9 @@ async def start_review(source, context: ContextTypes.DEFAULT_TYPE, user_id: int)
 
     set_activity(user_id, "review")
     log_event(user_id, "review_session")
+    record_activity(user_id, ACTIVITY_REVIEW)
 
-    # Готовим сессию. Формат повторения — всегда "варианты" (быстрее и проще).
+    # Готовим сессию.
     # Слова уже содержат word, translation, transcription. options может не быть —
     # сгенерируем простые заглушки или используем самопроверку.
     session = {

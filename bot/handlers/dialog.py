@@ -21,7 +21,7 @@ from bot.handlers import activities
 from config import ADMIN_USER_ID
 from bot.services.ai import get_ai_response, check_limit_alert_pending
 from bot.services.cost_control import LIMIT_EXCEEDED_MESSAGE
-from bot.services.progress import record_activity, ACTIVITY_DIALOG
+from bot.services.progress import record_activity, ACTIVITY_DIALOG, ACTIVITY_TOOL
 from bot.services.limits import check_and_consume, ACTION_MESSAGES, get_limit_message
 from bot.services.subscription import is_premium, save_word_from_meaning
 
@@ -223,14 +223,21 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
         except Exception as e:
             logger.error(f"Не удалось отправить алерт о лимите admin: {e}")
 
-    if not special and answer != LIMIT_EXCEEDED_MESSAGE:
-        memory.add_message(user_id, "assistant", answer)
-    log_event(user_id, "dialog")
-    if not special and answer != LIMIT_EXCEEDED_MESSAGE:
-        record_activity(user_id, ACTIVITY_DIALOG)
+    if answer == LIMIT_EXCEEDED_MESSAGE:
+        await update.message.reply_text(
+            answer,
+            reply_markup=keyboards.main_keyboard(),
+        )
+        return None
 
-    # Чистим разметку и отправляем обычным текстом — надежно, без сбоев парсинга.
     clean_answer = _strip_markdown(answer)
+    if not special:
+        memory.add_message(user_id, "assistant", answer)
+        log_event(user_id, "dialog")
+        record_activity(user_id, ACTIVITY_DIALOG)
+    else:
+        record_activity(user_id, ACTIVITY_TOOL)
+
     await update.message.reply_text(
         clean_answer,
         reply_markup=keyboards.main_keyboard(),
@@ -286,6 +293,7 @@ async def send_talk_opener(message, context, user_id: int, topic_name: str):
     clean = _strip_markdown(answer)
     memory.add_message(user_id, "assistant", clean)
     log_event(user_id, "talk_opener")
+    record_activity(user_id, ACTIVITY_DIALOG)
     await message.reply_text(clean, reply_markup=keyboards.main_keyboard())
 
 

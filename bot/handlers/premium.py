@@ -12,8 +12,9 @@ from config import (
     PREMIUM_DAYS_MONTH,
     PREMIUM_DAYS_YEAR,
     PAYMENT_PROVIDER,
+    PREMIUM_SALES_ENABLED,
 )
-from bot import texts
+from bot import texts, keyboards
 from bot.services.subscription import is_premium, grant_premium
 from bot.services.payments import PaymentRequest, get_payment_provider
 from database.db import get_user, log_event
@@ -56,7 +57,15 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if is_premium(user_id):
         until = user.get("premium_until") or "без срока"
         await update.message.reply_text(
-            texts.PREMIUM_ACTIVE.format(until=until)
+            texts.PREMIUM_ACTIVE.format(until=until),
+            reply_markup=keyboards.main_keyboard(),
+        )
+        return
+
+    if not PREMIUM_SALES_ENABLED:
+        await update.message.reply_text(
+            texts.PREMIUM_COMING_SOON,
+            reply_markup=keyboards.main_keyboard(),
         )
         return
 
@@ -81,10 +90,18 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
                 )
             )
             return
+        if not PREMIUM_SALES_ENABLED:
+            await query.edit_message_text(texts.PREMIUM_COMING_SOON)
+            return
         await query.edit_message_text(
             texts.PREMIUM_INTRO,
             reply_markup=_premium_keyboard(),
         )
+        return
+
+    if not PREMIUM_SALES_ENABLED:
+        await query.answer()
+        await query.edit_message_text(texts.PREMIUM_COMING_SOON)
         return
 
     await _handle_premium_plan(update, context)
