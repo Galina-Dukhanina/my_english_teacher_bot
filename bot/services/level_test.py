@@ -118,9 +118,7 @@ def can_take_level_test(user_id: int, *, during_onboarding: bool = False) -> tup
 
     if user.get("level_test_at"):
         return False, "free_once"
-    if user.get("level") in (None, "unknown"):
-        return True, "ok"
-    return False, "free_once"
+    return True, "ok"
 
 
 def days_until_retest(user_id: int) -> int | None:
