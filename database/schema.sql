@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_menu_date   TEXT DEFAULT NULL,
     challenge_days   INTEGER DEFAULT NULL,
     challenge_start  TEXT DEFAULT NULL,
+    level_test_at    TEXT DEFAULT NULL,
     created_at       TEXT DEFAULT (datetime('now'))
 );
 

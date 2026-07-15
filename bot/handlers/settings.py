@@ -167,6 +167,20 @@ async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TY
         await prompt_custom_reminder_time(query.message, user_id)
         return
 
+    if step == "setlevel" and value == "unknown":
+        await query.edit_message_text(
+            f"{texts.ASK_LEVEL}\n\n⏳ {texts.BTN_LEVELS['unknown']}"
+        )
+        from bot.handlers.level_test import start_level_test
+
+        ok = await start_level_test(query, user_id, during_onboarding=False)
+        if not ok:
+            await query.message.reply_text(
+                texts.ASK_LEVEL,
+                reply_markup=_buttons_from_dict(texts.BTN_LEVELS, "setlevel"),
+            )
+        return
+
     if value not in labels[step]:
         return
 

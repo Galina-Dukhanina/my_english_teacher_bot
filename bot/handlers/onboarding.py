@@ -96,6 +96,19 @@ async def handle_onboarding_button(update: Update, context: ContextTypes.DEFAULT
 
     # --- Выбран уровень ---
     elif step == "level":
+        if value == "unknown":
+            await query.edit_message_text(
+                f"{texts.ASK_LEVEL}\n\n⏳ {texts.BTN_LEVELS['unknown']}"
+            )
+            from bot.handlers.level_test import start_level_test
+
+            ok = await start_level_test(query, user_id, during_onboarding=True)
+            if not ok:
+                await query.message.reply_text(
+                    texts.ASK_LEVEL,
+                    reply_markup=_buttons_from_dict(texts.BTN_LEVELS, "level"),
+                )
+            return
         update_user(user_id, level=value, onboarding_step="goal")
         await query.edit_message_text(
             f"{texts.ASK_LEVEL}\n\n✅ {texts.BTN_LEVELS[value]}"

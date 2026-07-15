@@ -59,6 +59,7 @@ def migrate_db():
             "last_menu_date": "TEXT",
             "challenge_days": "INTEGER",
             "challenge_start": "TEXT",
+            "level_test_at": "TEXT",
         },
         "vocabulary": {
             "transcription": "TEXT",

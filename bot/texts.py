@@ -103,8 +103,28 @@ BTN_LEVELS = {
     "beginner": "Начинающий",
     "intermediate": "Средний",
     "advanced": "Продвинутый",
-    "unknown": "Не знаю",
+    "unknown": "Не знаю — пройти тест",
 }
+
+LEVEL_TEST_INTRO = (
+    "🔍 Короткий тест из 10 вопросов — подберём уровень.\n"
+    "Выбирай один вариант ответа."
+)
+LEVEL_TEST_QUESTION = "Вопрос {n} из {total}\n\n{question}"
+LEVEL_TEST_CORRECT = "✅ Верно!"
+LEVEL_TEST_WRONG = "❌ Правильный ответ: {answer}"
+LEVEL_TEST_RESULT = "Готово! Твой уровень: {level}"
+LEVEL_TEST_EXPIRED = (
+    "Тест прервался. Начни заново: /settings → уровень → «Не знаю — пройти тест»."
+)
+LEVEL_TEST_FREE_ONCE = (
+    "Тест на уровень доступен один раз при регистрации.\n"
+    "Сейчас у тебя: {level}. Выбери уровень вручную."
+)
+LEVEL_TEST_PREMIUM_WAIT = (
+    "Следующий тест можно пройти через {days} дн. (Premium — раз в месяц)."
+)
+LEVEL_TEST_UNAVAILABLE = "Сейчас тест недоступен. Выбери уровень вручную."
 
 BTN_GOALS = {
     "work": "Работа",
