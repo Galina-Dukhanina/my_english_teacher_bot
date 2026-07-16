@@ -30,6 +30,7 @@ PREMIUM_PRICE_YEAR = float(os.getenv("PREMIUM_PRICE_YEAR", "2490"))
 PREMIUM_DAYS_MONTH = int(os.getenv("PREMIUM_DAYS_MONTH", "30"))
 PREMIUM_DAYS_YEAR = int(os.getenv("PREMIUM_DAYS_YEAR", "365"))
 # false — показываем заглушку «Premium скоро», оплата недоступна
+# true — открыть продажи (prod: PAYMENT_PROVIDER=yookassa + credentials)
 PREMIUM_SALES_ENABLED = os.getenv("PREMIUM_SALES_ENABLED", "false").lower() in (
     "1",
     "true",

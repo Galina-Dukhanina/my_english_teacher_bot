@@ -289,3 +289,16 @@ CREATE TABLE IF NOT EXISTS daily_phrases_log (
     PRIMARY KEY (user_id, phrase_date),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS bot_notifications (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id      INTEGER NOT NULL,
+    kind         TEXT NOT NULL,
+    payload_json TEXT,
+    created_at   TEXT DEFAULT (datetime('now')),
+    sent_at      TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bot_notifications_pending
+    ON bot_notifications(sent_at, id);

@@ -11,7 +11,7 @@ from bot.repositories.curriculum_repo import CurriculumRepository
 from bot.repositories.learning_profile_repo import LearningProfileRepository
 from bot.repositories.progress_repo import ProgressRepository
 from bot.services.curriculum_service import CurriculumService
-from bot.services.subscription import is_premium
+from bot.services.premium_gate import check_program
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +51,9 @@ class LessonEngine:
         self._catalog = CurriculumService()
 
     def can_access_lessons(self, user_id: int) -> tuple[bool, str]:
-        if not is_premium(user_id):
-            return False, "not_premium"
-        profile = self._profiles.get(user_id)
-        if not profile or not profile.get("premium_setup_done"):
-            return False, "setup_required"
+        access = check_program(user_id)
+        if not access.allowed:
+            return False, access.reason
         module = self._catalog.resolve_active_module(user_id)
         if not module:
             return False, "no_module"

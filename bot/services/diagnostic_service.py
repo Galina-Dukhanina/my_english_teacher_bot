@@ -10,7 +10,7 @@ from pathlib import Path
 
 from bot.domain.levels import is_mvp_cefr
 from bot.repositories.learning_profile_repo import LearningProfileRepository
-from bot.services.subscription import is_premium
+from bot.services.premium_gate import check_program
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +52,11 @@ QUESTIONS: tuple[DiagnosticQuestion, ...] = _load_questions()
 
 
 def can_take_diagnostic(user_id: int) -> tuple[bool, str]:
-    if not is_premium(user_id):
-        return False, "not_premium"
+    access = check_program(user_id)
+    if not access.allowed:
+        return False, access.reason
 
     repo = LearningProfileRepository()
-    profile = repo.get(user_id)
-    if not profile or not profile.get("premium_setup_done"):
-        return False, "setup_required"
-
     skill_profile = repo.get_skill_profile(user_id)
     if skill_profile and skill_profile.get("diagnostic_at"):
         return False, "already_done"

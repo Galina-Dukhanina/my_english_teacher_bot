@@ -26,6 +26,7 @@ from bot.services.limits import (
     ACTION_WORDS_SESSION,
     get_limit_message,
 )
+from bot.services.premium_gate import upsell_text
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ async def handle_words_format(update: Update, context: ContextTypes.DEFAULT_TYPE
     limit_result = check_and_consume(user_id, ACTION_WORDS_SESSION)
     if not limit_result.allowed:
         await query.edit_message_text(
-            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
             reply_markup=keyboards.premium_upsell_keyboard(),
         )
         return

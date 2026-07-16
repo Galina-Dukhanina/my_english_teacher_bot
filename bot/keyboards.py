@@ -33,6 +33,9 @@ async def reply_main_menu(message):
 
 def premium_upsell_keyboard():
     """Inline-кнопка перехода к /premium."""
+    from bot.services.premium_gate import sales_enabled
+
+    label = "⭐ Premium" if sales_enabled() else "⭐ Premium (скоро)"
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton("⭐ Premium", callback_data="prem:info")]]
+        [[InlineKeyboardButton(label, callback_data="prem:info")]]
     )

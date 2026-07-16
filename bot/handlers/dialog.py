@@ -23,7 +23,13 @@ from bot.services.ai import get_ai_response, check_limit_alert_pending
 from bot.services.cost_control import LIMIT_EXCEEDED_MESSAGE
 from bot.services.progress import record_activity, ACTIVITY_DIALOG, ACTIVITY_TOOL
 from bot.services.limits import check_and_consume, ACTION_MESSAGES, get_limit_message
-from bot.services.subscription import is_premium, save_word_from_meaning
+from bot.services.premium_gate import (
+    PremiumFeature,
+    check_feature,
+    feature_denied_text,
+    upsell_text,
+)
+from bot.services.subscription import save_word_from_meaning
 
 logger = logging.getLogger(__name__)
 
@@ -129,11 +135,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             special=prompts.build_meaning_request(word),
         )
         if answer and answer != LIMIT_EXCEEDED_MESSAGE:
-            if is_premium(user_id):
+            access = check_feature(user_id, PremiumFeature.SAVE_WORD)
+            if access.allowed:
                 save_word_from_meaning(user_id, word, answer)
                 await update.message.reply_text(texts.PREMIUM_WORD_SAVED)
             else:
-                await update.message.reply_text(texts.PREMIUM_WORD_HINT)
+                await update.message.reply_text(
+                    feature_denied_text(PremiumFeature.SAVE_WORD),
+                    reply_markup=keyboards.premium_upsell_keyboard(),
+                )
         return
 
     if pending == "wait_topic":
@@ -198,7 +208,7 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
     limit_result = check_and_consume(user_id, ACTION_MESSAGES)
     if not limit_result.allowed:
         await update.message.reply_text(
-            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
             reply_markup=keyboards.premium_upsell_keyboard(),
         )
         return None
@@ -266,7 +276,7 @@ async def send_talk_opener(message, context, user_id: int, topic_name: str):
     limit_result = check_and_consume(user_id, ACTION_MESSAGES)
     if not limit_result.allowed:
         await message.reply_text(
-            get_limit_message(limit_result) + "\n\n" + texts.PREMIUM_UPSELL,
+            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
             reply_markup=keyboards.premium_upsell_keyboard(),
         )
         return

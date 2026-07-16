@@ -10,6 +10,8 @@ from database.db import (
     get_payment_by_provider_id,
 )
 
+from bot.services.activation_notify import queue_premium_activated
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,9 +29,11 @@ def is_premium(user_id: int) -> bool:
         return bool(user.get("is_premium"))
 
 
-def grant_premium(user_id: int, days: int):
+def grant_premium(user_id: int, days: int, *, notify: bool = True):
     """Выдать premium на N дней (admin или webhook)."""
     db_activate_premium(user_id, days)
+    if notify:
+        queue_premium_activated(user_id, days=days, source="grant")
     logger.info(f"Premium активирован: user={user_id}, days={days}")
 
 
@@ -44,7 +48,7 @@ def complete_payment(provider_payment_id: str, user_id: int, plan: str, days: in
         "paid",
         paid_at=datetime.now().isoformat(timespec="seconds"),
     )
-    grant_premium(user_id, days)
+    grant_premium(user_id, days, notify=True)
 
 
 def save_word_from_meaning(user_id: int, word: str, explanation: str):

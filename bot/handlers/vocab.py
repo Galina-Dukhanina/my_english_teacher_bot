@@ -6,7 +6,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot import texts, keyboards
-from bot.services.subscription import is_premium
+from bot.services.premium_gate import PremiumFeature, check_feature, feature_denied_text
 from database.db import (
     get_user,
     set_pending_action,
@@ -40,9 +40,12 @@ async def addword_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Сначала пройди онбординг: /start")
         return
 
-    if not is_premium(user_id):
+    access = check_feature(user_id, PremiumFeature.ADDWORD)
+    if not access.allowed:
+        from bot.services.premium_gate import feature_denied_text
+
         await update.message.reply_text(
-            texts.ADDWORD_PREMIUM_ONLY,
+            feature_denied_text(PremiumFeature.ADDWORD),
             reply_markup=keyboards.premium_upsell_keyboard(),
         )
         return

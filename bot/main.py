@@ -41,6 +41,10 @@ def main():
     from database.db import migrate_db
 
     migrate_db()
+    from bot.services.premium_gate import validate_sales_configuration
+
+    for warning in validate_sales_configuration():
+        logger.warning(warning)
     logger.info("База данных готова")
 
     # Создаём приложение, при необходимости через прокси

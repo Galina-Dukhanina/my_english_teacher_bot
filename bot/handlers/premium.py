@@ -12,8 +12,8 @@ from config import (
     PREMIUM_DAYS_MONTH,
     PREMIUM_DAYS_YEAR,
     PAYMENT_PROVIDER,
-    PREMIUM_SALES_ENABLED,
 )
+from bot.services.premium_gate import sales_enabled
 from bot import texts, keyboards
 from bot.services.subscription import is_premium, grant_premium
 from bot.services.payments import PaymentRequest, get_payment_provider
@@ -83,7 +83,7 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await _send_premium_ready(update.message, user_id, until)
         return
 
-    if not PREMIUM_SALES_ENABLED:
+    if not sales_enabled():
         await update.message.reply_text(
             texts.PREMIUM_COMING_SOON,
             reply_markup=keyboards.main_keyboard(),
@@ -124,7 +124,7 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
                         reply_markup=markup,
                     )
             return
-        if not PREMIUM_SALES_ENABLED:
+        if not sales_enabled():
             await query.edit_message_text(texts.PREMIUM_COMING_SOON)
             return
         await query.edit_message_text(
@@ -133,7 +133,7 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
         )
         return
 
-    if not PREMIUM_SALES_ENABLED:
+    if not sales_enabled():
         await query.answer()
         await query.edit_message_text(texts.PREMIUM_COMING_SOON)
         return
@@ -240,7 +240,7 @@ async def grant_premium_command(update: Update, context: ContextTypes.DEFAULT_TY
         await update.message.reply_text("Пользователь не найден в базе.")
         return
 
-    grant_premium(target_id, days)
+    grant_premium(target_id, days, notify=False)
     log_event(admin_id, f"grant_premium_{target_id}")
 
     await update.message.reply_text(

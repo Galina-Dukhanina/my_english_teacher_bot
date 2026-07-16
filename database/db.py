@@ -274,6 +274,19 @@ def _migrate_premium_tables(conn):
             PRIMARY KEY (user_id, phrase_date),
             FOREIGN KEY (user_id) REFERENCES users(user_id)
         );
+
+        CREATE TABLE IF NOT EXISTS bot_notifications (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id      INTEGER NOT NULL,
+            kind         TEXT NOT NULL,
+            payload_json TEXT,
+            created_at   TEXT DEFAULT (datetime('now')),
+            sent_at      TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_bot_notifications_pending
+            ON bot_notifications(sent_at, id);
         """
     )
 
@@ -790,6 +803,49 @@ def count_premium_users():
     ).fetchone()
     conn.close()
     return row["cnt"] or 0
+
+
+def enqueue_bot_notification(user_id: int, kind: str, payload: dict | None = None):
+    import json
+
+    conn = get_connection()
+    conn.execute(
+        """
+        INSERT INTO bot_notifications (user_id, kind, payload_json)
+        VALUES (?, ?, ?)
+        """,
+        (user_id, kind, json.dumps(payload or {}, ensure_ascii=False)),
+    )
+    conn.commit()
+    conn.close()
+
+
+def list_pending_bot_notifications(limit: int = 50) -> list[dict]:
+    conn = get_connection()
+    rows = conn.execute(
+        """
+        SELECT * FROM bot_notifications
+        WHERE sent_at IS NULL
+        ORDER BY id ASC
+        LIMIT ?
+        """,
+        (limit,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def mark_bot_notification_sent(notification_id: int):
+    from datetime import datetime
+
+    now = datetime.now().isoformat(timespec="seconds")
+    conn = get_connection()
+    conn.execute(
+        "UPDATE bot_notifications SET sent_at = ? WHERE id = ?",
+        (now, notification_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 # ---------- Обратная связь ----------

@@ -456,6 +456,17 @@ PREMIUM_UPSELL = (
     "⭐ Premium скоро — персональный план под твою цель и больше практики. "
     "Подробнее: /premium"
 )
+PREMIUM_UPSELL_SALES = (
+    "⭐ Premium — персональный план обучения, уроки под цель и без дневных лимитов. "
+    "Подробнее: /premium"
+)
+PREMIUM_HELP_LINE_DEV = "/premium — персональный план обучения (скоро)"
+PREMIUM_HELP_LINE_SALES = "/premium — Premium: план обучения и оплата"
+PREMIUM_SETUP_REQUIRED_SHORT = "Сначала настрой программу: /premium"
+PREMIUM_PROGRAM_ONLY = "Уроки Premium доступны после активации подписки. /premium"
+PREMIUM_PROGRAM_ONLY_SALES = (
+    "Ежедневные уроки — в Premium. Оформи подписку: /premium"
+)
 PREMIUM_COMING_SOON = (
     "⭐ Premium — скоро\n\n"
     "Сейчас бот бесплатный: диалог, слова, грамматика и все инструменты — "
@@ -662,14 +673,22 @@ PREMIUM_WORD_SAVED = (
     "«Повторить слова»."
 )
 PREMIUM_WORD_HINT = (
-    "📚 Сохранение слов в словарь появится в Premium — сейчас в разработке. "
-    "/premium"
+    "📚 Сохранение слов в словарь — функция Premium. "
+    "Подробнее: /premium"
+)
+PREMIUM_WORD_HINT_SALES = (
+    "📚 Сохранение слов в словарь доступно в Premium. "
+    "Оформи подписку: /premium"
 )
 
 # --- Словарь (Premium) ---
 ADDWORD_PREMIUM_ONLY = (
-    "Команда /addword появится в Premium — сейчас в разработке.\n"
+    "Команда /addword доступна в Premium.\n"
     "Подробнее: /premium"
+)
+ADDWORD_PREMIUM_ONLY_SALES = (
+    "Команда /addword — только для Premium.\n"
+    "Оформи подписку: /premium"
 )
 ADDWORD_ASK = (
     "Напиши слово и перевод в одной строке:\n\n"

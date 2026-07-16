@@ -4,6 +4,7 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from bot.services.activation_notify import send_pending_notifications
 from bot.services.daily_phrase_delivery import send_daily_phrases
 from bot.services.reminders import send_reminders
 from database.db import expire_premium_users
@@ -11,6 +12,12 @@ from database.db import expire_premium_users
 logger = logging.getLogger(__name__)
 
 _scheduler: AsyncIOScheduler | None = None
+
+
+async def _notifications_job(app):
+    count = await send_pending_notifications(app)
+    if count:
+        logger.info(f"Отправлено уведомлений: {count}")
 
 
 async def _daily_phrase_job(app):
@@ -59,6 +66,14 @@ def start_scheduler(app):
         minutes=1,
         args=[app],
         id="send_daily_phrases",
+        replace_existing=True,
+    )
+    _scheduler.add_job(
+        _notifications_job,
+        "interval",
+        minutes=1,
+        args=[app],
+        id="send_bot_notifications",
         replace_existing=True,
     )
     _scheduler.add_job(
