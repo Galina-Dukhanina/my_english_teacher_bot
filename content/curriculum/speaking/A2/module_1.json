@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "speaking",
+    "cefr_level": "A2",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Tell a story",
+    "outcome_ru": "Рассказать короткую историю",
+    "core_ratio": 0.5,
+    "target_ratio": 0.5
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Past event",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Last year I visited Prague and loved it.",
+            "phrase_ru": "В прошлом году я был в Праге — понравилось.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Past Simple narrative",
+            "body_ru": "Last year I visited… — начало истории."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Last summer we ___ to the sea.",
+            "options": [
+              "went",
+              "go",
+              "going",
+              "goes"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "last_year_i_visited__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Расскажи о поездке в 3–4 предложениях (Past Simple).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

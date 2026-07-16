@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "self",
+    "cefr_level": "A2",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Opinions",
+    "outcome_ru": "Выразить мнение",
+    "core_ratio": 0.5,
+    "target_ratio": 0.5
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: I think…",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I think learning English opens new opportunities.",
+            "phrase_ru": "Думаю, английский открывает новые возможности.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I think (that)…",
+            "body_ru": "I think + clause — своё мнение."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I think it ___ useful.",
+            "options": [
+              "is",
+              "are",
+              "am",
+              "be"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_think_learning_eng_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши своё мнение на любую тему (2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

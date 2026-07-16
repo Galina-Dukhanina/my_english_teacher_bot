@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "exams",
+    "cefr_level": "B1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Integrated skills",
+    "outcome_ru": "Связать reading и writing",
+    "core_ratio": 0.3,
+    "target_ratio": 0.7
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Summarize",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "The author argues that practice beats talent when goals are clear.",
+            "phrase_ru": "Автор считает: практика важнее таланта при ясных целях.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Summarizing",
+            "body_ru": "The author argues/suggests that…"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "The author ___ that regular practice helps.",
+            "options": [
+              "argues",
+              "argue",
+              "arguing",
+              "argued"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "the_author_argues_th_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши краткое summary (2–3 предложения) по любой знакомой теме.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

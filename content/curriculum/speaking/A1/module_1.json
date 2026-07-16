@@ -1,0 +1,330 @@
+{
+  "module": {
+    "goal": "speaking",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Start speaking",
+    "outcome_ru": "О себе, простые вопросы, семья, интересы",
+    "core_ratio": 0.7,
+    "target_ratio": 0.3
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: About me",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I'm from Russia and I live in …",
+            "phrase_ru": "Я из России, живу в …",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I'm from / I live in",
+            "body_ru": "from — страна/город рождения; live in — где живёшь."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I ___ from Italy.",
+            "options": [
+              "am",
+              "is",
+              "are",
+              "be"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i'm_from_russia_and__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Расскажи, откуда ты и где живёшь (2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "title": "Day 2: Simple questions",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "What do you do in your free time?",
+            "phrase_ru": "Чем занимаешься в свободное время?",
+            "phrase_id": "phrase_d2"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "What do you…?",
+            "body_ru": "What do you do? — о работе или хобби по контексту."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "What ___ you do?",
+            "options": [
+              "do",
+              "does",
+              "did",
+              "doing"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "what_do_you_do_in_yo_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Задай собеседнику 2 простых вопроса с What do you…?",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "title": "Day 3: Family",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I have one brother and two sisters.",
+            "phrase_ru": "У меня один брат и две сестры.",
+            "phrase_id": "phrase_d3"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I have…",
+            "body_ru": "have — члены семьи, без артикля во множественном."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "She ___ two cats.",
+            "options": [
+              "have",
+              "has",
+              "having",
+              "had"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_have_one_brother_a_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Опиши семью в 2–3 предложениях.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "title": "Day 4: Interests",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I enjoy reading and hiking.",
+            "phrase_ru": "Мне нравится читать и ходить в походы.",
+            "phrase_id": "phrase_d4"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I enjoy + -ing",
+            "body_ru": "enjoy/like/love + gerund: I enjoy cooking."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I enjoy ___.",
+            "options": [
+              "swim",
+              "swimming",
+              "swims",
+              "swam"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_enjoy_reading_and__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши о 2–3 хобби.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "title": "Day 5: Plans",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "This weekend I'm going to visit my friends.",
+            "phrase_ru": "В эти выходные я собираюсь навестить друзей.",
+            "phrase_id": "phrase_d5"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "be going to",
+            "body_ru": "Планы: I'm going to + глагол."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "We ___ going to watch a movie.",
+            "options": [
+              "am",
+              "is",
+              "are",
+              "be"
+            ],
+            "correct": 2
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "this_weekend_i'm_goi_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши планы на выходные (2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

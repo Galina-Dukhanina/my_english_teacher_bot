@@ -1,0 +1,330 @@
+{
+  "module": {
+    "goal": "self",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Everyday English",
+    "outcome_ru": "Быт, интересы, предпочтения, повседневная жизнь",
+    "core_ratio": 0.7,
+    "target_ratio": 0.3
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Daily routine",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I usually wake up at seven.",
+            "phrase_ru": "Обычно я просыпаюсь в семь.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Usually + Present Simple",
+            "body_ru": "usually/often/sometimes — перед глаголом."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I usually ___ coffee in the morning.",
+            "options": [
+              "drink",
+              "drinks",
+              "drinking",
+              "drank"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_usually_wake_up_at_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Опиши утро в 2–3 предложениях.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "title": "Day 2: Likes and dislikes",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I like podcasts, but I don't like loud music.",
+            "phrase_ru": "Мне нравятся подкасты, но не нравится громкая музыка.",
+            "phrase_id": "phrase_d2"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "like / don't like",
+            "body_ru": "don't + глагол для dislike."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "She ___ like horror movies.",
+            "options": [
+              "don't",
+              "doesn't",
+              "isn't",
+              "aren't"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_like_podcasts,_but_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Что нравится и не нравится — 2–3 предложения.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "title": "Day 3: Movies and series",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "My favorite series is about detectives.",
+            "phrase_ru": "Мой любимый сериал про детективов.",
+            "phrase_id": "phrase_d3"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "favorite + singular",
+            "body_ru": "My favorite book is…"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "My favorite ___ is very funny.",
+            "options": [
+              "movie",
+              "movies",
+              "watch",
+              "watching"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "my_favorite_series_i_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши о любимом фильме или сериале.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "title": "Day 4: Feelings",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I feel tired after a long day.",
+            "phrase_ru": "Я чувствую усталость после долгого дня.",
+            "phrase_id": "phrase_d4"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I feel + adjective",
+            "body_ru": "feel tired/happy/excited."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "They feel ___.",
+            "options": [
+              "happy",
+              "happily",
+              "happiness",
+              "happierly"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_feel_tired_after_a_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Как ты себя чувствуешь сегодня? 1–2 предложения.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "title": "Day 5: Small talk",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Nice weather today, isn't it?",
+            "phrase_ru": "Хорошая погода сегодня, правда?",
+            "phrase_id": "phrase_d5"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Small talk starters",
+            "body_ru": "Комментарий о погоде — лёгкий старт разговора."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "___ weather today!",
+            "options": [
+              "Nice",
+              "Nicely",
+              "Niceful",
+              "Nicing"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "nice_weather_today,__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 2 фразы для small talk.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

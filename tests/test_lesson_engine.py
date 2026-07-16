@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import pytest
@@ -29,47 +28,15 @@ def seeded_work_module(monkeypatch):
     )
     repo.update_fields(1, premium_setup_done=1, daily_minutes=15)
 
-    content = json.loads(
-        (ROOT / "content" / "dev" / "work_a1_module.json").read_text(encoding="utf-8")
-    )
-    cur = CurriculumRepository()
-    module_id = cur.insert_module(content["module"])
-    for lesson in content["lessons"]:
-        steps = lesson.pop("steps")
-        lesson_id = cur.insert_lesson(
-            {
-                "module_id": module_id,
-                "day_number": lesson["day_number"],
-                "title": lesson["title"],
-                "estimated_minutes": lesson.get("estimated_minutes", 15),
-            }
-        )
-        for step in steps:
-            cur.insert_step(
-                {
-                    "lesson_id": lesson_id,
-                    "sort_order": step["sort_order"],
-                    "step_type": step["step_type"],
-                    "payload": step.get("payload", {}),
-                }
-            )
+    from bot.services.content_loader import load_module_file
 
-    second_id = cur.insert_lesson(
-        {
-            "module_id": module_id,
-            "day_number": 2,
-            "title": "Day 2",
-            "estimated_minutes": 15,
-        }
+    module_id, _ = load_module_file(
+        ROOT / "content" / "curriculum" / "work" / "A1" / "module_1.json",
+        repo=CurriculumRepository(),
     )
-    cur.insert_step(
-        {
-            "lesson_id": second_id,
-            "sort_order": 1,
-            "step_type": "phrase",
-            "payload": {"phrase_en": "Nice to meet you."},
-        }
-    )
+
+    lessons = CurriculumRepository().list_lessons(module_id)
+    second_id = next(l["id"] for l in lessons if l["day_number"] == 2)
 
     return module_id, second_id
 

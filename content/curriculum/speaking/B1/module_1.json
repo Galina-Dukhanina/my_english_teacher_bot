@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "speaking",
+    "cefr_level": "B1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Debate basics",
+    "outcome_ru": "Аргументировать позицию",
+    "core_ratio": 0.3,
+    "target_ratio": 0.7
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: On the other hand",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "On the other hand, remote work saves commuting time.",
+            "phrase_ru": "С другой стороны, удалёнка экономит время на дорогу.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "On the other hand",
+            "body_ru": "Контраст: On the other hand, …"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Which phrase shows contrast?",
+            "options": [
+              "On the other hand,",
+              "On the same hand,",
+              "On the happy,",
+              "On the quickly,"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "on_the_other_hand,_r_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 2 аргумента за и 1 против любой темы.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

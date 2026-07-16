@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "exams",
+    "cefr_level": "A2",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Exam strategies",
+    "outcome_ru": "Стратегии reading/listening",
+    "core_ratio": 0.5,
+    "target_ratio": 0.5
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Skimming",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Skim the text first, then read the questions.",
+            "phrase_ru": "Сначала пробегись по тексту, потом читай вопросы.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Skimming",
+            "body_ru": "Skim — быстро найти общую идею."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Skimming helps find the ___ idea quickly.",
+            "options": [
+              "main",
+              "tiny",
+              "secret",
+              "no"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "skim_the_text_first,_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши, как ты готовишься к reading section.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

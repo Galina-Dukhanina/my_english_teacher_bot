@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "work",
+    "cefr_level": "A2",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Work updates",
+    "outcome_ru": "Рассказать о статусе задачи",
+    "core_ratio": 0.5,
+    "target_ratio": 0.5
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Task status",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I'm working on the report and it will be ready tomorrow.",
+            "phrase_ru": "Я работаю над отчётом, будет готов завтра.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Present Continuous для процесса",
+            "body_ru": "I'm working on… — задача в процессе."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I ___ working on the slides.",
+            "options": [
+              "am",
+              "is",
+              "are",
+              "be"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i'm_working_on_the_r_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши статус одной задачи (2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "self",
+    "cefr_level": "B1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Culture and news",
+    "outcome_ru": "Обсудить новость или тренд",
+    "core_ratio": 0.3,
+    "target_ratio": 0.7
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Discuss a trend",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "More people are learning languages through short daily sessions.",
+            "phrase_ru": "Всё больше людей учат языки короткими ежедневными сессиями.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Present Continuous trend",
+            "body_ru": "More people are + -ing — тренд."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "More people are ___ online courses.",
+            "options": [
+              "taking",
+              "take",
+              "took",
+              "takes"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "more_people_are_lear_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши о тренде, который тебе интересен.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

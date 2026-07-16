@@ -1,0 +1,330 @@
+{
+  "module": {
+    "goal": "work",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Introduce yourself at work",
+    "outcome_ru": "Представиться, назвать должность, понять простую инструкцию",
+    "core_ratio": 0.7,
+    "target_ratio": 0.3
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Name and job",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "My name is … and I work as a …",
+            "phrase_ru": "Меня зовут …, я работаю …",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "work as + профессия",
+            "body_ru": "I work as a designer. Артикль a/an перед профессией."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I work ___ a teacher.",
+            "options": [
+              "as",
+              "is",
+              "at",
+              "on"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "my_name_is_…_and_i_w_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Представься: имя и работа (1–2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "title": "Day 2: Where I work",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I work at a small company in Moscow.",
+            "phrase_ru": "Я работаю в небольшой компании в Москве.",
+            "phrase_id": "phrase_d2"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "work at + место",
+            "body_ru": "at — компания/офис: I work at Google."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "She works ___ a hospital.",
+            "options": [
+              "in",
+              "at",
+              "on",
+              "to"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_work_at_a_small_co_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Где ты работаешь? Напиши одно предложение.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "title": "Day 3: Simple instruction",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Please send the file today.",
+            "phrase_ru": "Пожалуйста, отправь файл сегодня.",
+            "phrase_id": "phrase_d3"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Please + глагол",
+            "body_ru": "Вежливая просьба: Please open the document."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "___ close the door, please.",
+            "options": [
+              "Close",
+              "Closing",
+              "Closed",
+              "Closes"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "please_send_the_file_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши вежливую просьбу коллеге (1 предложение).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "title": "Day 4: Schedule a meeting",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Can we meet on Monday at 10?",
+            "phrase_ru": "Мы можем встретиться в понедельник в 10?",
+            "phrase_id": "phrase_d4"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Can we…? — предложение встречи",
+            "body_ru": "Can we meet tomorrow? — мягкое предложение."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Can we ___ on Friday?",
+            "options": [
+              "meet",
+              "meeting",
+              "met",
+              "meets"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "can_we_meet_on_monda_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Предложи время короткой встречи (1–2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "title": "Day 5: Ask to repeat",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Sorry, could you repeat that, please?",
+            "phrase_ru": "Извините, не могли бы вы повторить?",
+            "phrase_id": "phrase_d5"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Could you…? — уточнение",
+            "body_ru": "Could you repeat that? — если не расслышали."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Sorry, could you ___ that?",
+            "options": [
+              "repeat",
+              "repeating",
+              "repeats",
+              "repeated"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "sorry,_could_you_rep_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши фразу, если не понял(а) задачу на созвоне.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

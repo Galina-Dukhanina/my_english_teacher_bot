@@ -1,0 +1,330 @@
+{
+  "module": {
+    "goal": "travel",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Travel basics",
+    "outcome_ru": "Аэропорт, транспорт, отель, ресторан, просьба о помощи",
+    "core_ratio": 0.7,
+    "target_ratio": 0.3
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: At the airport",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Where is gate B12?",
+            "phrase_ru": "Где выход B12?",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Where is…?",
+            "body_ru": "Спросить место: Where is the restroom?"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Where ___ the exit?",
+            "options": [
+              "is",
+              "are",
+              "am",
+              "be"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "where_is_gate_b12?_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Спроси, где выход или gate (1 предложение).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "title": "Day 2: Transport",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "One ticket to the city center, please.",
+            "phrase_ru": "Один билет до центра, пожалуйста.",
+            "phrase_id": "phrase_d2"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "One ticket to…",
+            "body_ru": "to + место назначения."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Two tickets ___ the airport.",
+            "options": [
+              "to",
+              "at",
+              "in",
+              "on"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "one_ticket_to_the_ci_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Купи билет — напиши фразу кассиру.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "title": "Day 3: Hotel check-in",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I have a reservation under Ivanov.",
+            "phrase_ru": "У меня бронь на имя Ivanov.",
+            "phrase_id": "phrase_d3"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "reservation under + фамилия",
+            "body_ru": "I have a reservation. My name is…"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I ___ a reservation.",
+            "options": [
+              "have",
+              "has",
+              "having",
+              "had"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i_have_a_reservation_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши фразу при регистрации в отеле.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "title": "Day 4: Restaurant",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Can I have the menu, please?",
+            "phrase_ru": "Можно меню, пожалуйста?",
+            "phrase_id": "phrase_d4"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Can I have…?",
+            "body_ru": "Заказать вежливо: Can I have a coffee?"
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Can I ___ the bill?",
+            "options": [
+              "have",
+              "has",
+              "having",
+              "had"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "can_i_have_the_menu,_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Закажи еду или напиток (1–2 предложения).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "title": "Day 5: Ask for help",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "Excuse me, I'm lost. Can you help me?",
+            "phrase_ru": "Извините, я заблудился. Можете помочь?",
+            "phrase_id": "phrase_d5"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Excuse me + просьба",
+            "body_ru": "I'm lost. — если потерялся."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Excuse me, can you ___ me?",
+            "options": [
+              "help",
+              "helping",
+              "helps",
+              "helped"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "excuse_me,_i'm_lost._listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши просьбу о помощи в незнакомом месте.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "module": {
+    "goal": "travel",
+    "cefr_level": "A2",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Travel problems",
+    "outcome_ru": "Объяснить проблему в поездке",
+    "core_ratio": 0.5,
+    "target_ratio": 0.5
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Booking issue",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "I'd like to change my reservation, please.",
+            "phrase_ru": "Я хотел(а) бы изменить бронь.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "I'd like to…",
+            "body_ru": "I'd like to + глагол — вежливая просьба."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I'd like to ___ my flight.",
+            "options": [
+              "change",
+              "changing",
+              "changed",
+              "changes"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "i'd_like_to_change_m_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши просьбу изменить бронь.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}

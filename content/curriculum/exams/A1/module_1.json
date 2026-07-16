@@ -1,0 +1,330 @@
+{
+  "module": {
+    "goal": "exams",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Exam foundations",
+    "outcome_ru": "Базовые задания: reading, grammar, vocabulary (TOEFL/DET стиль)",
+    "core_ratio": 0.6,
+    "target_ratio": 0.4
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: Reading main idea",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "The main idea is what the text is mostly about.",
+            "phrase_ru": "Главная мысль — о чём в основном текст.",
+            "phrase_id": "phrase_d1"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Main idea",
+            "body_ru": "Ищи повторяющуюся тему абзаца."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "What is the text mostly about? → Main ___.",
+            "options": [
+              "idea",
+              "word",
+              "sound",
+              "letter"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "the_main_idea_is_wha_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Прочитай: «Tom studies English every day.» — напиши main idea одним предложением.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "title": "Day 2: Present simple",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "She works five days a week.",
+            "phrase_ru": "Она работает пять дней в неделю.",
+            "phrase_id": "phrase_d2"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Present Simple",
+            "body_ru": "he/she/it + глагол-s: works, studies."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "He ___ English.",
+            "options": [
+              "study",
+              "studies",
+              "studying",
+              "studied"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "she_works_five_days__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 2 предложения о своём расписании (Present Simple).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "title": "Day 3: Vocabulary in context",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "The word «deadline» means the last day to finish.",
+            "phrase_ru": "Deadline — последний день, когда нужно сдать.",
+            "phrase_id": "phrase_d3"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Context clues",
+            "body_ru": "Смотри на слова вокруг незнакомого слова."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "A ___ is the last day to finish work.",
+            "options": [
+              "deadline",
+              "holiday",
+              "breakfast",
+              "window"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "the_word_«deadline»__listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши предложение со словом deadline.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "title": "Day 4: Listening script",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "🎧 A: Your test starts at 9. B: Should I bring my ID?",
+            "phrase_ru": "Текст диалога перед экзаменом.",
+            "phrase_id": "phrase_d4"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Listening: details",
+            "body_ru": "Выписывай числа, время, имена."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "When does the test start?",
+            "options": [
+              "At 8",
+              "At 9",
+              "At 10",
+              "At 12"
+            ],
+            "correct": 1
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "🎧_a:_your_test_start_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 1 вопрос, который ты задашь в день экзамена.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "title": "Day 5: Short written response",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "In my opinion, practice every day helps.",
+            "phrase_ru": "По моему мнению, практика каждый день помогает.",
+            "phrase_id": "phrase_d5"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "In my opinion…",
+            "body_ru": "Короткое written response: 2–3 предложения."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "Which is a good opinion phrase?",
+            "options": [
+              "In my opinion,",
+              "In my table,",
+              "In my kitchen,",
+              "In my Monday,"
+            ],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "in_my_opinion,_pract_listen",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 2–3 предложения: зачем тебе английский (exam goal).",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом ответ из предыдущего шага.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}
