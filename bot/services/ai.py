@@ -33,6 +33,7 @@ def _request_completion(
     model: str,
     max_tokens: int,
     user_id: int | None = None,
+    temperature: float = 0.7,
 ) -> tuple[str | None, dict]:
     """Общий запрос к OpenRouter с проверкой лимита и учётом расходов.
 
@@ -47,7 +48,7 @@ def _request_completion(
             model=model,
             messages=messages,
             max_tokens=max_tokens,
-            temperature=0.7,
+            temperature=temperature,
         )
         text = response.choices[0].message.content.strip()
         usage = {

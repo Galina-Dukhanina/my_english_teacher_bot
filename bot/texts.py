@@ -488,7 +488,8 @@ LESSON_EXPIRED = "Урок прервался. Начни заново: /premium
 LESSON_STOPPED = "Урок остановлен. Продолжить: /premium → «Урок дня»."
 LESSON_COMPLETE = (
     "✅ Урок завершён!\n"
-    "Упражнения: {correct} из {total} верно.\n\n"
+    "Упражнения: {correct} из {total} верно.\n"
+    "Writing: {apply_passed} из {apply_total} зачтено.\n\n"
     "Следующий урок — завтра или позже из /premium."
 )
 LESSON_STEP_REVIEW = (
@@ -512,7 +513,10 @@ LESSON_STEP_UNKNOWN = "Шаг урока."
 LESSON_EXERCISE_CORRECT = "✅ Верно!"
 LESSON_EXERCISE_WRONG = "❌ Правильный ответ: {answer}"
 LESSON_APPLY_TOO_SHORT = "Маловато — нужно минимум {min_words} слов."
-LESSON_APPLY_SAVED = "Записала ответ. Проверка через AI — в следующем обновлении."
+LESSON_APPLY_CHECKING = "Проверяю ответ…"
+LESSON_APPLY_PASSED = "✅ {feedback}"
+LESSON_APPLY_FAILED = "💡 {feedback}\n\nВариант:\n{corrected}"
+LESSON_APPLY_AI_UNAVAILABLE = "Записала ответ. AI-проверка временно недоступна — попробуем позже."
 
 PREMIUM_ACTIVE_NEED_DIAG = (
     "⭐ Premium до {until}\n\n"

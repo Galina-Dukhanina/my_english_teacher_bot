@@ -116,6 +116,46 @@ class LessonRunner:
             return None
         return review_engine.submit_review(user_id, item_id, result)
 
+    def record_apply_result(
+        self,
+        user_id: int,
+        session: dict,
+        step: dict,
+        *,
+        passed: bool | None,
+        score: float | None = None,
+    ) -> dict:
+        scores = session.setdefault(
+            "scores",
+            {"exercise_correct": 0, "exercise_total": 0, "apply_total": 0, "apply_passed": 0},
+        )
+        scores["apply_total"] = scores.get("apply_total", 0) + 1
+        if passed:
+            scores["apply_passed"] = scores.get("apply_passed", 0) + 1
+        elif passed is False:
+            module_id = session.get("module_id")
+            if module_id:
+                review_engine.register_exercise_miss(user_id, module_id, session)
+        session.setdefault("scores", scores)["last_apply_score"] = score
+        return session
+
+    @staticmethod
+    def lesson_context_for_apply(session: dict) -> dict:
+        step_index = session.get("step_index", 0)
+        steps = session.get("steps") or []
+        phrase_en = ""
+        explain_ru = ""
+        for step in steps[:step_index]:
+            stype = step.get("step_type")
+            payload = step.get("payload") or {}
+            if stype == "phrase" and payload.get("phrase_en"):
+                phrase_en = payload["phrase_en"]
+            if stype == "explain":
+                title = payload.get("title_ru", "")
+                body = payload.get("body_ru", "")
+                explain_ru = f"{title}. {body}".strip(". ")
+        return {"phrase_en": phrase_en, "explain_ru": explain_ru}
+
     def advance_review(self, user_id: int, session: dict) -> dict:
         step = self.current_step(session)
         if not step or step.get("step_type") != "review":
@@ -134,6 +174,8 @@ class LessonRunner:
         summary = {
             "exercise_correct": scores.get("exercise_correct", 0),
             "exercise_total": scores.get("exercise_total", 0),
+            "apply_passed": scores.get("apply_passed", 0),
+            "apply_total": scores.get("apply_total", 0),
             "lesson_id": session.get("lesson_id"),
             "module_id": session.get("module_id"),
         }

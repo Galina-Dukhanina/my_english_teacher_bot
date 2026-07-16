@@ -3,9 +3,13 @@
 import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
 from bot import texts
+from bot.repositories.attempt_repo import AttemptRepository
+from bot.repositories.learning_profile_repo import LearningProfileRepository
+from bot.services.ai_gateway import check_writing
 from bot.services.lesson_runner import KIND_LESSON, lesson_runner
 from bot.services.session_store import save_session
 from database.db import log_event
@@ -161,8 +165,15 @@ async def _finish(message, user_id: int, session: dict):
     summary = lesson_runner.finish_lesson(user_id, session)
     correct = summary.get("exercise_correct", 0)
     total = summary.get("exercise_total", 0)
+    apply_passed = summary.get("apply_passed", 0)
+    apply_total = summary.get("apply_total", 0)
     await message.reply_text(
-        texts.LESSON_COMPLETE.format(correct=correct, total=total)
+        texts.LESSON_COMPLETE.format(
+            correct=correct,
+            total=total,
+            apply_passed=apply_passed,
+            apply_total=apply_total,
+        )
     )
     log_event(user_id, "lesson_complete_ui")
 
@@ -330,10 +341,55 @@ async def handle_lesson_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return True
 
-    session.setdefault("scores", {})["last_apply"] = text[:500]
     session["awaiting_text"] = False
     save_session(user_id, KIND_LESSON, session)
-    await update.message.reply_text(texts.LESSON_APPLY_SAVED)
+    await update.message.reply_text(texts.LESSON_APPLY_CHECKING)
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.TYPING
+    )
+
+    profile = LearningProfileRepository().get(user_id) or {}
+    ctx = lesson_runner.lesson_context_for_apply(session)
+    result, error_message = check_writing(
+        user_id,
+        prompt_ru=payload.get("prompt_ru", texts.LESSON_STEP_APPLY_DEFAULT),
+        user_text=text,
+        cefr_level=profile.get("cefr_level") or "A1",
+        phrase_en=ctx.get("phrase_en", ""),
+        explain_ru=ctx.get("explain_ru", ""),
+    )
+
+    attempt_repo = AttemptRepository()
+    if result:
+        lesson_runner.record_apply_result(
+            user_id,
+            session,
+            step,
+            passed=result.passed,
+            score=result.score,
+        )
+        attempt_repo.log_attempt(
+            user_id,
+            lesson_id=session.get("lesson_id"),
+            lesson_step_id=step.get("step_id"),
+            answer_text=text,
+            result=result.raw or {},
+            score=result.score,
+        )
+        if result.passed:
+            feedback = texts.LESSON_APPLY_PASSED.format(feedback=result.feedback_ru)
+        else:
+            corrected = result.corrected_text or text
+            feedback = texts.LESSON_APPLY_FAILED.format(
+                feedback=result.feedback_ru,
+                corrected=corrected,
+            )
+    else:
+        session.setdefault("scores", {})["last_apply"] = text[:500]
+        feedback = error_message or texts.LESSON_APPLY_AI_UNAVAILABLE
+        save_session(user_id, KIND_LESSON, session)
+
+    await update.message.reply_text(feedback)
 
     lesson_runner.advance(user_id, session)
     session = lesson_runner.get_session(user_id)
