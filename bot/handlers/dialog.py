@@ -194,6 +194,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Голосовые сообщения пока не поддерживаются."""
+    user_id = update.effective_user.id
     await update.message.reply_text(
         texts.VOICE_NOT_SUPPORTED,
         reply_markup=keyboards.main_keyboard(user_id),
