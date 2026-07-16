@@ -117,6 +117,20 @@ class LearningItemRepository:
         conn.close()
         return int(row["n"] if row else 0)
 
+    def count_by_status(self, user_id: int) -> dict[str, int]:
+        conn = get_connection()
+        rows = conn.execute(
+            """
+            SELECT status, COUNT(*) AS n
+            FROM user_learning_items
+            WHERE user_id = ?
+            GROUP BY status
+            """,
+            (user_id,),
+        ).fetchall()
+        conn.close()
+        return {row["status"]: int(row["n"]) for row in rows}
+
     def update_review_state(
         self,
         item_id: int,

@@ -397,6 +397,34 @@ PROGRESS_LIMITS_FOOTNOTE = (
 PROGRESS_LIMITS_SEPARATOR = "───────────────"
 PROGRESS_LIMITS_PREMIUM = "💎 Premium — дневные лимиты не действуют."
 
+PREMIUM_PROGRESS_HEADER = "⭐ Premium-программа"
+PREMIUM_PROGRESS_SETUP = (
+    "⭐ Premium активен, но программа ещё не настроена.\n"
+    "Настрой профиль: /premium"
+)
+PREMIUM_PROGRESS_PROGRAM = "🎯 {goal} · {level} · {minutes} мин/день"
+PREMIUM_PROGRESS_MODULE = (
+    "📘 {module}\n"
+    "   Уроки: {completed}/{total} · {status}"
+)
+PREMIUM_PROGRESS_CURRENT_LESSON = "   ▶️ Сейчас: {lesson}"
+PREMIUM_PROGRESS_SKILLS = "📊 Навыки:\n{profile}"
+PREMIUM_PROGRESS_NO_DIAG = "📊 Диагностика не пройдена — /premium"
+PREMIUM_PROGRESS_SRS = (
+    "🔄 Фразы SRS: на повторении {due} · "
+    "в работе {learning} · освоено {mastered}"
+)
+PREMIUM_PROGRESS_SCORES = (
+    "✏️ Уроки: MCQ {ex_correct}/{ex_total} · "
+    "Writing {apply_passed}/{apply_total}"
+)
+PREMIUM_PROGRESS_WEAK_SKILL = "⚠️ Фокус: {skill}"
+PREMIUM_MODULE_STATUS = {
+    "not_started": "не начат",
+    "in_progress": "в процессе",
+    "completed": "завершён",
+}
+
 # --- Напоминания ---
 REMINDER_DEFAULT = (
     "Пора потренироваться! 5 минут разговора — и день не зря. "

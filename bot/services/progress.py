@@ -82,6 +82,7 @@ def get_progress_summary(user_id: int) -> dict:
 def format_progress_text(user_id: int) -> str:
     """Форматированный блок прогресса."""
     from bot import texts
+    from bot.services.progress_report_service import progress_report_service
 
     summary = get_progress_summary(user_id)
     challenge_line = format_challenge_line(user_id)
@@ -92,13 +93,18 @@ def format_progress_text(user_id: int) -> str:
     else:
         streak_block = texts.CHALLENGE_NONE
 
-    return texts.PROGRESS.format(
+    base = texts.PROGRESS.format(
         streak_block=streak_block,
         new_words=summary.get("new_words", 0),
         mastered_words=summary.get("mastered_words", 0),
         to_review=summary.get("to_review", 0),
         limits_block=format_daily_limits_block(user_id),
     )
+
+    premium_block = progress_report_service.format_block(user_id)
+    if premium_block:
+        return f"{base}\n\n{texts.PROGRESS_LIMITS_SEPARATOR}\n\n{premium_block}"
+    return base
 
 
 def format_welcome_back(user_id: int) -> str:
