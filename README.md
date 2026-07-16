@@ -60,6 +60,9 @@ docker compose down
 | `OPENROUTER_API_KEY` | Ключ OpenRouter |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` |
 | `MODEL_DIALOG` | Модель для диалога |
+| `MODEL_ANALYSIS` | Модель для проверки writing (Premium apply) |
+| `PREMIUM_SALES_ENABLED` | `false` — заглушка; `true` — оплата |
+| `PREMIUM_REVIEW_BATCH_SIZE` | Фраз SRS перед уроком (по умолчанию 3) |
 | `DAILY_COST_LIMIT_USD` | Дневной потолок расходов на AI |
 | `ADMIN_USER_ID` | Telegram ID admin (алерты, `/stats`) |
 | `PROXY_URL` | Опционально: HTTP/SOCKS5 прокси |
@@ -118,6 +121,13 @@ docker compose --profile yookassa up -d
 
 ## Чеклист перед бета-запуском
 
+Автопроверка:
+```bash
+python scripts/qa_preflight.py
+python scripts/seed_curriculum.py --rebuild   # dev / первый деплой Premium-контента
+```
+
+### Базовый бот
 - [ ] Бот отвечает после рестарта (история и сессии в SQLite)
 - [ ] `ADMIN_USER_ID` задан, `/stats` работает
 - [ ] `DAILY_COST_LIMIT_USD` настроен под бюджет
@@ -125,6 +135,24 @@ docker compose --profile yookassa up -d
 - [ ] Настроен ежедневный бэкап БД
 - [ ] Токен бота не публиковался в открытом доступе
 
+### Premium (ручной тест перед prod)
+- [ ] `/grant_premium USER_ID 30` → настройка профиля → диагностика
+- [ ] Урок дня: review → phrase → exercise → apply (AI-проверка)
+- [ ] `/progress` — блок Premium-программы
+- [ ] Фраза дня (кнопка и push в `reminder_time`)
+- [ ] `PREMIUM_SALES_ENABLED=false` на prod до финального QA
+
+### Prod deploy (когда Premium протестирован)
+1. `git pull` на сервере
+2. Заполнить `.env` (без `PROXY_URL` socks, если нет socksio)
+3. `docker compose up -d --build`
+4. На первом деплое Premium: `docker compose exec bot python scripts/seed_curriculum.py --rebuild`
+5. Проверить логи: `docker compose logs -f bot`
+6. Для оплаты: `PREMIUM_SALES_ENABLED=true`, `PAYMENT_PROVIDER=yookassa`, credentials
+7. `docker compose --profile yookassa up -d` — webhook `https://DOMAIN/webhook/yookassa`
+8. Health: `curl https://DOMAIN/health`
+
 ## Статус
 
-✅ MVP готов к бета-тесту. Монетизация: лимиты + `/premium` + ЮKassa (webhook).
+✅ MVP + Premium-программа (этапы 1–11). Listening/Speaking — этапы 13–14.
+Монетизация: лимиты + `/premium` + ЮKassa (включать после QA).
