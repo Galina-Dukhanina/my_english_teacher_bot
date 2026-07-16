@@ -250,18 +250,23 @@ async def _finish_setup(message, user_id: int, session: dict):
     profile = profile_service.complete_setup(user_id, session)
     goal_label = texts.BTN_GOALS.get(profile.get("goal") or "", profile.get("goal") or "—")
     minutes = profile.get("daily_minutes") or "—"
-    await message.reply_text(
-        texts.PREMIUM_SETUP_DONE.format(goal=goal_label, minutes=minutes)
-    )
-    log_event(user_id, "premium_setup_complete_ui")
-
-    from bot.handlers.diagnostic import diagnostic_keyboard, needs_diagnostic
-
     if needs_diagnostic(user_id):
         await message.reply_text(
             texts.DIAG_AFTER_SETUP,
             reply_markup=diagnostic_keyboard(),
         )
+        return
+
+    markup = premium_lesson_keyboard(user_id)
+    await message.reply_text(
+        texts.PREMIUM_SETUP_DONE.format(goal=goal_label, minutes=minutes),
+    )
+    if markup:
+        await message.reply_text(
+            texts.DIAG_AFTER_SETUP_LESSON,
+            reply_markup=markup,
+        )
+    log_event(user_id, "premium_setup_complete_ui")
 
 
 def premium_setup_keyboard() -> InlineKeyboardMarkup:

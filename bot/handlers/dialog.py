@@ -55,6 +55,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    # --- Premium lesson (apply step) ---
+    from bot.handlers.premium_lesson import handle_lesson_text
+
+    if await handle_lesson_text(update, context):
+        return
+
     # --- Premium setup (текст profession / exam date) ---
     from bot.handlers.premium_onboarding import handle_setup_text
 

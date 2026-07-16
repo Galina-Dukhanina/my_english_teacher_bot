@@ -472,8 +472,40 @@ PREMIUM_ACTIVE_SETUP = (
 )
 PREMIUM_ACTIVE_READY = (
     "⭐ Premium до {until}\n\n"
-    "Программа настроена. Ежедневные уроки — в следующих обновлениях."
+    "Программа настроена. Начни урок дня или продолжи начатый."
 )
+
+BTN_LESSON_START = "📖 Урок дня"
+BTN_LESSON_RESUME = "▶️ Продолжить урок"
+BTN_LESSON_CONTINUE = "Дальше →"
+BTN_LESSON_STOP = "Остановить урок"
+
+LESSON_HEADER = "📘 {module}\n{lesson} · день {day}"
+LESSON_STARTED = "Урок начался. Один шаг за раз — нажимай «Дальше» или отвечай на задание."
+LESSON_RESUMED = "Продолжаем урок с того места, где остановились."
+LESSON_NONE = "Сейчас нет доступного урока. Модуль завершён или контент ещё не добавлен."
+LESSON_EXPIRED = "Урок прервался. Начни заново: /premium"
+LESSON_STOPPED = "Урок остановлен. Продолжить: /premium → «Урок дня»."
+LESSON_COMPLETE = (
+    "✅ Урок завершён!\n"
+    "Упражнения: {correct} из {total} верно.\n\n"
+    "Следующий урок — завтра или позже из /premium."
+)
+LESSON_STEP_REVIEW = (
+    "🔄 Повторение\n"
+    "Скоро подтянем слова и фразы из твоих ошибок. Пока идём дальше."
+)
+LESSON_STEP_PHRASE = "💬 Фраза дня\n\n{phrase_en}\n\n{phrase_ru}"
+LESSON_STEP_EXPLAIN = "📖 {title}\n\n{body}"
+LESSON_STEP_EXERCISE = "✏️ {question}"
+LESSON_STEP_APPLY = "✍️ {prompt}"
+LESSON_STEP_APPLY_DEFAULT = "Напиши ответ на английском (1–2 предложения)."
+LESSON_STEP_UNKNOWN = "Шаг урока."
+LESSON_EXERCISE_CORRECT = "✅ Верно!"
+LESSON_EXERCISE_WRONG = "❌ Правильный ответ: {answer}"
+LESSON_APPLY_TOO_SHORT = "Маловато — нужно минимум {min_words} слов."
+LESSON_APPLY_SAVED = "Записала ответ. Проверка через AI — в следующем обновлении."
+
 PREMIUM_ACTIVE_NEED_DIAG = (
     "⭐ Premium до {until}\n\n"
     "Профиль настроен. Осталось пройти короткую диагностику навыков (~5 мин)."
@@ -494,6 +526,14 @@ DIAG_SETUP_REQUIRED = "Сначала настрой программу: /premiu
 DIAG_ALREADY_DONE = "Диагностика уже пройдена. Повтор будет позже."
 DIAG_UNAVAILABLE = "Диагностика сейчас недоступна."
 DIAG_EXPIRED = "Диагностика прервалась. Начни заново: /premium"
+
+DIAG_AFTER_SETUP = (
+    "Можно сразу пройти диагностику — так точнее подберём программу."
+)
+DIAG_AFTER_SETUP_LESSON = (
+    "Диагностику можно пройти позже в /premium. "
+    "Когда будешь готов(а) — нажми «Урок дня»."
+)
 
 DIAG_SKILL_LABELS = {
     "grammar": "Grammar",

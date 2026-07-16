@@ -150,6 +150,11 @@ async def _finish(message, user_id: int, answers: list[bool]):
     await message.reply_text(
         texts.DIAG_RESULT.format(profile=format_skill_profile(skills))
     )
+    from bot.handlers.premium_lesson import premium_lesson_keyboard
+
+    markup = premium_lesson_keyboard(user_id)
+    if markup:
+        await message.reply_text(texts.DIAG_AFTER_SETUP_LESSON, reply_markup=markup)
 
 
 def needs_diagnostic(user_id: int) -> bool:
