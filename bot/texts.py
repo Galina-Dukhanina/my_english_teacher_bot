@@ -492,9 +492,17 @@ LESSON_COMPLETE = (
     "Следующий урок — завтра или позже из /premium."
 )
 LESSON_STEP_REVIEW = (
-    "🔄 Повторение\n"
-    "Скоро подтянем слова и фразы из твоих ошибок. Пока идём дальше."
+    "🔄 Повторение ({current} из {total})\n\n"
+    "Как будет по-английски?\n\n{phrase_ru}"
 )
+LESSON_REVIEW_HINT = "💡 {phrase_en}"
+LESSON_REVIEW_CORRECT = "✅ Отлично! Следующая фраза…"
+LESSON_REVIEW_WRONG = "❌ Правильно:\n\n{phrase_en}"
+LESSON_REVIEW_DONE = "🔄 Повторение завершено. Переходим к уроку."
+BTN_LESSON_REVIEW_KNEW = "✅ Помню"
+BTN_LESSON_REVIEW_HINT = "💡 Подсказка"
+BTN_LESSON_REVIEW_FORGOT = "❌ Не помню"
+BTN_LESSON_REVIEW_NEXT = "Дальше →"
 LESSON_STEP_PHRASE = "💬 Фраза дня\n\n{phrase_en}\n\n{phrase_ru}"
 LESSON_STEP_EXPLAIN = "📖 {title}\n\n{body}"
 LESSON_STEP_EXERCISE = "✏️ {question}"

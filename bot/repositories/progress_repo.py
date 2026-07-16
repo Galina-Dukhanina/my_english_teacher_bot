@@ -154,17 +154,6 @@ class ProgressRepository:
         conn.close()
 
     def count_due_review_items(self, user_id: int) -> int:
-        now = datetime.now().isoformat(timespec="seconds")
-        conn = get_connection()
-        row = conn.execute(
-            """
-            SELECT COUNT(*) AS n FROM user_learning_items
-            WHERE user_id = ?
-              AND status != 'mastered'
-              AND next_review_at IS NOT NULL
-              AND next_review_at <= ?
-            """,
-            (user_id, now),
-        ).fetchone()
-        conn.close()
-        return int(row["n"] if row else 0)
+        from bot.repositories.learning_item_repo import LearningItemRepository
+
+        return LearningItemRepository().count_due(user_id)

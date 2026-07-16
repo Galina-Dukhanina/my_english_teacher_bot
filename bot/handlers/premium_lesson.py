@@ -19,6 +19,24 @@ def _continue_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def _review_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton(texts.BTN_LESSON_REVIEW_KNEW, callback_data="lesson:rev:1")],
+            [
+                InlineKeyboardButton(texts.BTN_LESSON_REVIEW_HINT, callback_data="lesson:rev:2"),
+                InlineKeyboardButton(texts.BTN_LESSON_REVIEW_FORGOT, callback_data="lesson:rev:0"),
+            ],
+        ]
+    )
+
+
+def _review_next_keyboard(result_code: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(texts.BTN_LESSON_REVIEW_NEXT, callback_data=f"lesson:revnext:{result_code}")]]
+    )
+
+
 def _lesson_header(session: dict) -> str:
     return texts.LESSON_HEADER.format(
         module=session.get("module_title", ""),
@@ -27,13 +45,25 @@ def _lesson_header(session: dict) -> str:
     )
 
 
+def _current_review_item(step: dict) -> tuple[dict | None, int, int]:
+    payload = step.get("payload") or {}
+    items = payload.get("items") or []
+    index = int(payload.get("index", 0))
+    if index >= len(items):
+        return None, index, len(items)
+    return items[index], index + 1, len(items)
+
+
 def render_step_message(session: dict, step: dict) -> str:
     header = _lesson_header(session)
     step_type = step["step_type"]
     payload = step.get("payload") or {}
 
     if step_type == "review":
-        return f"{header}\n\n{texts.LESSON_STEP_REVIEW}"
+        item, current, total = _current_review_item(step)
+        if not item:
+            return f"{header}\n\n{texts.LESSON_REVIEW_DONE}"
+        return f"{header}\n\n{texts.LESSON_STEP_REVIEW.format(current=current, total=total, phrase_ru=item.get('phrase_ru', ''))}"
 
     if step_type == "phrase":
         en = payload.get("phrase_en", "")
@@ -59,7 +89,13 @@ def render_step_message(session: dict, step: dict) -> str:
 
 def render_step_keyboard(step: dict) -> InlineKeyboardMarkup | None:
     step_type = step["step_type"]
-    if step_type in {"review", "phrase", "explain"}:
+    if step_type == "review":
+        item, _, _ = _current_review_item(step)
+        if not item:
+            return _continue_keyboard()
+        return _review_keyboard()
+
+    if step_type in {"phrase", "explain"}:
         return _continue_keyboard()
 
     if step_type == "exercise":
@@ -97,12 +133,22 @@ def premium_lesson_keyboard(user_id: int) -> InlineKeyboardMarkup | None:
 
 
 async def send_current_step(message, user_id: int, session: dict):
-    step_index = session.get("step_index", 0)
+    session["user_id"] = user_id
     step = lesson_runner.current_step(session)
+    while step and step.get("step_type") == "review":
+        payload = step.get("payload") or {}
+        if not payload.get("items"):
+            lesson_runner.advance(user_id, session)
+            session = lesson_runner.get_session(user_id) or session
+            step = lesson_runner.current_step(session)
+        else:
+            break
+
     if not step:
         await _finish(message, user_id, session)
         return
 
+    step_index = session.get("step_index", 0)
     step = {**step, "_index": step_index}
     text = render_step_message(session, step)
     keyboard = render_step_keyboard(step)
@@ -119,6 +165,44 @@ async def _finish(message, user_id: int, session: dict):
         texts.LESSON_COMPLETE.format(correct=correct, total=total)
     )
     log_event(user_id, "lesson_complete_ui")
+
+
+async def _after_review_answer(query, user_id: int, session: dict, result_code: str):
+    step = lesson_runner.current_step(session)
+    if not step or step.get("step_type") != "review":
+        return
+
+    item, _, _ = _current_review_item(step)
+    if not item:
+        return
+
+    if result_code == "2":
+        hint_text = texts.LESSON_REVIEW_HINT.format(phrase_en=item.get("phrase_en", ""))
+        await query.edit_message_text(
+            f"{render_step_message(session, step)}\n\n{hint_text}",
+            reply_markup=_review_next_keyboard("2"),
+        )
+        return
+
+    outcome = lesson_runner.record_review_response(
+        user_id, session, item["id"], result_code
+    )
+    if result_code == "0":
+        feedback = texts.LESSON_REVIEW_WRONG.format(
+            phrase_en=(outcome or {}).get("phrase_en", item.get("phrase_en", ""))
+        )
+        await query.edit_message_text(
+            f"{render_step_message(session, step)}\n\n{feedback}",
+            reply_markup=_review_next_keyboard("0"),
+        )
+        return
+
+    feedback = texts.LESSON_REVIEW_CORRECT
+    await query.edit_message_text(f"{render_step_message(session, step)}\n\n{feedback}")
+    session = lesson_runner.advance_review(user_id, session)
+    session = lesson_runner.get_session(user_id)
+    if session:
+        await send_current_step(query.message, user_id, session)
 
 
 async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -159,11 +243,31 @@ async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_T
 
     if action == "go":
         step = lesson_runner.current_step(session)
-        if not step or step["step_type"] not in {"review", "phrase", "explain"}:
+        if not step or step["step_type"] not in {"phrase", "explain"}:
             return
+        if step["step_type"] == "phrase":
+            lesson_runner.on_step_completed(user_id, session, step)
         lesson_runner.advance(user_id, session)
         session = lesson_runner.get_session(user_id)
         await send_current_step(query.message, user_id, session)
+        return
+
+    if action == "rev" and len(parts) == 3:
+        await _after_review_answer(query, user_id, session, parts[2])
+        return
+
+    if action == "revnext" and len(parts) == 3:
+        result_code = parts[2]
+        step = lesson_runner.current_step(session)
+        if not step or step.get("step_type") != "review":
+            return
+        item, _, _ = _current_review_item(step)
+        if item and result_code == "2":
+            lesson_runner.record_review_response(user_id, session, item["id"], "2")
+        session = lesson_runner.advance_review(user_id, session)
+        session = lesson_runner.get_session(user_id)
+        if session:
+            await send_current_step(query.message, user_id, session)
         return
 
     if action == "pick" and len(parts) == 4:
@@ -186,7 +290,7 @@ async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_T
 
         chosen = options[opt_index]
         is_correct = opt_index == correct_idx
-        lesson_runner.record_exercise_result(session, correct=is_correct)
+        lesson_runner.record_exercise_result(user_id, session, correct=is_correct)
         if is_correct:
             feedback = texts.LESSON_EXERCISE_CORRECT
         else:

@@ -6,6 +6,7 @@ import logging
 
 from bot.repositories.progress_repo import ProgressRepository
 from bot.services.lesson_engine import LessonPlan, StepPlan, lesson_engine
+from bot.services.review_engine import review_engine
 from bot.services.session_store import clear_session, get_session, save_session
 
 logger = logging.getLogger(__name__)
@@ -78,11 +79,54 @@ class LessonRunner:
         save_session(user_id, KIND_LESSON, session)
         return session
 
-    def record_exercise_result(self, session: dict, *, correct: bool) -> dict:
+    def record_exercise_result(
+        self, user_id: int, session: dict, *, correct: bool
+    ) -> dict:
         scores = session.setdefault("scores", {"exercise_correct": 0, "exercise_total": 0})
         scores["exercise_total"] = scores.get("exercise_total", 0) + 1
         if correct:
             scores["exercise_correct"] = scores.get("exercise_correct", 0) + 1
+        else:
+            module_id = session.get("module_id")
+            if module_id:
+                review_engine.register_exercise_miss(user_id, module_id, session)
+        return session
+
+    def on_step_completed(self, user_id: int, session: dict, step: dict) -> dict:
+        step_type = step.get("step_type")
+        module_id = session.get("module_id")
+        if step_type == "phrase" and module_id:
+            review_engine.register_phrase(
+                user_id, module_id, step.get("payload") or {}
+            )
+        return session
+
+    def record_review_response(
+        self, user_id: int, session: dict, item_id: int, result_code: str
+    ) -> dict | None:
+        from bot.domain.review import ReviewResult
+
+        mapping = {
+            "0": ReviewResult.INCORRECT,
+            "1": ReviewResult.CORRECT,
+            "2": ReviewResult.CORRECT_WITH_HINT,
+        }
+        result = mapping.get(result_code)
+        if result is None:
+            return None
+        return review_engine.submit_review(user_id, item_id, result)
+
+    def advance_review(self, user_id: int, session: dict) -> dict:
+        step = self.current_step(session)
+        if not step or step.get("step_type") != "review":
+            return session
+
+        payload = step.setdefault("payload", {})
+        items = payload.get("items") or []
+        payload["index"] = payload.get("index", 0) + 1
+        if payload["index"] >= len(items):
+            return self.advance(user_id, session)
+        save_session(user_id, KIND_LESSON, session)
         return session
 
     def finish_lesson(self, user_id: int, session: dict) -> dict:
@@ -106,17 +150,19 @@ class LessonRunner:
 
     def _plan_to_session(self, plan: LessonPlan) -> dict:
         steps = [_step_to_dict(s) for s in _active_steps(plan)]
-        if plan.include_review:
+        review_items = review_engine.get_due_batch(plan.user_id) if plan.include_review else []
+        if review_items:
             steps.insert(
                 0,
                 {
                     "step_id": 0,
                     "sort_order": 0,
                     "step_type": "review",
-                    "payload": {},
+                    "payload": {"items": review_items, "index": 0},
                 },
             )
         return {
+            "user_id": plan.user_id,
             "lesson_id": plan.lesson_id,
             "module_id": plan.module_id,
             "module_title": plan.module_title,

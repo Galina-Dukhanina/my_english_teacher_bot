@@ -21,6 +21,7 @@ FREE_LIMIT_GRAMMAR_EXERCISES = int(os.getenv("FREE_LIMIT_GRAMMAR_EXERCISES", "1"
 # === Лимиты Premium (listening/voice — этапы 13–14) ===
 PREMIUM_LIMIT_LISTENING = int(os.getenv("PREMIUM_LIMIT_LISTENING", "5"))
 PREMIUM_LIMIT_VOICE = int(os.getenv("PREMIUM_LIMIT_VOICE", "2"))
+PREMIUM_REVIEW_BATCH_SIZE = int(os.getenv("PREMIUM_REVIEW_BATCH_SIZE", "3"))
 
 # === Платежи ===
 PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "manual")  # manual | yookassa
