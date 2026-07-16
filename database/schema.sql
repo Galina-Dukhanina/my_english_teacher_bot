@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     challenge_days   INTEGER DEFAULT NULL,
     challenge_start  TEXT DEFAULT NULL,
     level_test_at    TEXT DEFAULT NULL,
+    ui_language      TEXT DEFAULT 'ru',
     created_at       TEXT DEFAULT (datetime('now'))
 );
 

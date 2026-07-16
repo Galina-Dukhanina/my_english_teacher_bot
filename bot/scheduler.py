@@ -38,7 +38,11 @@ async def _expire_premium_job(app):
     user_ids = expire_premium_users()
     for user_id in user_ids:
         try:
-            await app.bot.send_message(chat_id=user_id, text=texts.PREMIUM_EXPIRED)
+            from bot.i18n import t
+
+            await app.bot.send_message(
+                chat_id=user_id, text=t("PREMIUM_EXPIRED", user_id=user_id)
+            )
         except Exception as e:
             logger.error(f"Не удалось уведомить об истечении premium {user_id}: {e}")
     if user_ids:

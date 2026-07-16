@@ -182,13 +182,13 @@ def format_completion_message(status: dict) -> str:
     )
 
 
-def challenge_goal_keyboard():
+def challenge_goal_keyboard(user_id: int | None = None):
     """Кнопки выбора длительности вызова."""
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-    from bot import texts
+    from bot.i18n import td
 
     keyboard = [
         [InlineKeyboardButton(label, callback_data=f"streakgoal:{code}")]
-        for code, label in texts.BTN_CHALLENGE_DAYS.items()
+        for code, label in td("BTN_CHALLENGE_DAYS", user_id=user_id).items()
     ]
     return InlineKeyboardMarkup(keyboard)

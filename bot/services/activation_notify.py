@@ -7,7 +7,7 @@ import logging
 
 from telegram import InlineKeyboardMarkup
 
-from bot import texts
+from bot.i18n import t
 from database.db import (
     enqueue_bot_notification,
     list_pending_bot_notifications,
@@ -27,10 +27,10 @@ def queue_premium_activated(user_id: int, *, days: int, source: str = "payment")
     )
 
 
-def _activation_keyboard() -> InlineKeyboardMarkup:
+def _activation_keyboard(user_id: int) -> InlineKeyboardMarkup:
     from bot.handlers.premium_onboarding import premium_setup_keyboard
 
-    return premium_setup_keyboard()
+    return premium_setup_keyboard(user_id)
 
 
 async def send_pending_notifications(app) -> int:
@@ -44,8 +44,8 @@ async def send_pending_notifications(app) -> int:
                 days = int(payload.get("days") or 30)
                 await app.bot.send_message(
                     chat_id=user_id,
-                    text=texts.PREMIUM_ACTIVATED_USER.format(days=days),
-                    reply_markup=_activation_keyboard(),
+                    text=t("PREMIUM_ACTIVATED_USER", user_id=user_id, days=days),
+                    reply_markup=_activation_keyboard(user_id),
                 )
             mark_bot_notification_sent(row["id"])
             sent += 1

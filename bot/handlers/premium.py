@@ -13,6 +13,7 @@ from config import (
     PREMIUM_DAYS_YEAR,
     PAYMENT_PROVIDER,
 )
+from bot.i18n import t
 from bot.services.premium_gate import sales_enabled
 from bot import texts, keyboards
 from bot.services.subscription import is_premium, grant_premium
@@ -25,24 +26,25 @@ from database.db import get_user, log_event
 
 logger = logging.getLogger(__name__)
 
-_PLANS = {
-    "month": (PREMIUM_PRICE_MONTH, PREMIUM_DAYS_MONTH, texts.PREMIUM_PLAN_MONTH),
-    "year": (PREMIUM_PRICE_YEAR, PREMIUM_DAYS_YEAR, texts.PREMIUM_PLAN_YEAR),
-}
+
+def _plan_description(plan: str, user_id: int) -> str:
+    if plan == "month":
+        return texts.PREMIUM_PLAN_MONTH
+    return texts.PREMIUM_PLAN_YEAR
 
 
-def _premium_keyboard():
+def _premium_keyboard(user_id: int):
     return InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
-                    texts.PREMIUM_BTN_MONTH.format(price=int(PREMIUM_PRICE_MONTH)),
+                    t("PREMIUM_BTN_MONTH", user_id=user_id, price=int(PREMIUM_PRICE_MONTH)),
                     callback_data="prem:month",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    texts.PREMIUM_BTN_YEAR.format(price=int(PREMIUM_PRICE_YEAR)),
+                    t("PREMIUM_BTN_YEAR", user_id=user_id, price=int(PREMIUM_PRICE_YEAR)),
                     callback_data="prem:year",
                 )
             ],
@@ -50,17 +52,21 @@ def _premium_keyboard():
     )
 
 
+def _format_until(user: dict, user_id: int) -> str:
+    return user.get("premium_until") or t("PREMIUM_UNLIMITED", user_id=user_id)
+
+
 async def _send_premium_ready(message, user_id: int, until: str):
     if needs_diagnostic(user_id):
         await message.reply_text(
-            texts.PREMIUM_ACTIVE_NEED_DIAG.format(until=until),
-            reply_markup=diagnostic_keyboard(),
+            t("PREMIUM_ACTIVE_NEED_DIAG", user_id=user_id, until=until),
+            reply_markup=diagnostic_keyboard(user_id),
         )
         return
     markup = premium_menu_keyboard(user_id)
     await message.reply_text(
-        texts.PREMIUM_ACTIVE_READY.format(until=until),
-        reply_markup=markup or keyboards.main_keyboard(),
+        t("PREMIUM_ACTIVE_READY", user_id=user_id, until=until),
+        reply_markup=markup or keyboards.main_keyboard(user_id),
     )
 
 
@@ -68,16 +74,16 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user = get_user(user_id)
     if not user or not user["onboarding_done"]:
-        await update.message.reply_text("Сначала пройди онбординг: /start")
+        await update.message.reply_text(t("ONBOARDING_REQUIRED", user_id=user_id))
         return
 
     log_event(user_id, "premium_view")
     if is_premium(user_id):
-        until = user.get("premium_until") or "без срока"
+        until = _format_until(user, user_id)
         if profile_service.needs_premium_setup(user_id):
             await update.message.reply_text(
-                texts.PREMIUM_ACTIVE_SETUP.format(until=until),
-                reply_markup=premium_setup_keyboard(),
+                t("PREMIUM_ACTIVE_SETUP", user_id=user_id, until=until),
+                reply_markup=premium_setup_keyboard(user_id),
             )
         else:
             await _send_premium_ready(update.message, user_id, until)
@@ -85,14 +91,14 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not sales_enabled():
         await update.message.reply_text(
-            texts.PREMIUM_COMING_SOON,
-            reply_markup=keyboards.main_keyboard(),
+            t("PREMIUM_COMING_SOON", user_id=user_id),
+            reply_markup=keyboards.main_keyboard(user_id),
         )
         return
 
     await update.message.reply_text(
-        texts.PREMIUM_INTRO,
-        reply_markup=_premium_keyboard(),
+        t("PREMIUM_INTRO", user_id=user_id),
+        reply_markup=_premium_keyboard(user_id),
     )
 
 
@@ -100,42 +106,43 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
     """Обработка prem:info, prem:month, prem:year."""
     query = update.callback_query
     _, action = query.data.split(":", 1)
+    user_id = query.from_user.id
 
     if action == "info":
         await query.answer()
-        user = get_user(query.from_user.id)
-        if user and is_premium(query.from_user.id):
-            until = user.get("premium_until") or "без срока"
-            if profile_service.needs_premium_setup(query.from_user.id):
+        user = get_user(user_id)
+        if user and is_premium(user_id):
+            until = _format_until(user, user_id)
+            if profile_service.needs_premium_setup(user_id):
                 await query.edit_message_text(
-                    texts.PREMIUM_ACTIVE_SETUP.format(until=until),
-                    reply_markup=premium_setup_keyboard(),
+                    t("PREMIUM_ACTIVE_SETUP", user_id=user_id, until=until),
+                    reply_markup=premium_setup_keyboard(user_id),
                 )
             else:
-                if needs_diagnostic(query.from_user.id):
+                if needs_diagnostic(user_id):
                     await query.edit_message_text(
-                        texts.PREMIUM_ACTIVE_NEED_DIAG.format(until=until),
-                        reply_markup=diagnostic_keyboard(),
+                        t("PREMIUM_ACTIVE_NEED_DIAG", user_id=user_id, until=until),
+                        reply_markup=diagnostic_keyboard(user_id),
                     )
                 else:
-                    markup = premium_menu_keyboard(query.from_user.id)
+                    markup = premium_menu_keyboard(user_id)
                     await query.edit_message_text(
-                        texts.PREMIUM_ACTIVE_READY.format(until=until),
+                        t("PREMIUM_ACTIVE_READY", user_id=user_id, until=until),
                         reply_markup=markup,
                     )
             return
         if not sales_enabled():
-            await query.edit_message_text(texts.PREMIUM_COMING_SOON)
+            await query.edit_message_text(t("PREMIUM_COMING_SOON", user_id=user_id))
             return
         await query.edit_message_text(
-            texts.PREMIUM_INTRO,
-            reply_markup=_premium_keyboard(),
+            t("PREMIUM_INTRO", user_id=user_id),
+            reply_markup=_premium_keyboard(user_id),
         )
         return
 
     if not sales_enabled():
         await query.answer()
-        await query.edit_message_text(texts.PREMIUM_COMING_SOON)
+        await query.edit_message_text(t("PREMIUM_COMING_SOON", user_id=user_id))
         return
 
     await _handle_premium_plan(update, context)
@@ -147,14 +154,18 @@ async def _handle_premium_plan(update: Update, context: ContextTypes.DEFAULT_TYP
     user_id = query.from_user.id
     _, plan = query.data.split(":", 1)
 
-    if plan not in _PLANS:
+    if plan not in ("month", "year"):
         return
 
     if is_premium(user_id):
-        await query.edit_message_text(texts.PREMIUM_ALREADY)
+        await query.edit_message_text(t("PREMIUM_ALREADY", user_id=user_id))
         return
 
-    amount, days, description = _PLANS[plan]
+    if plan == "month":
+        amount, days = PREMIUM_PRICE_MONTH, PREMIUM_DAYS_MONTH
+    else:
+        amount, days = PREMIUM_PRICE_YEAR, PREMIUM_DAYS_YEAR
+    description = _plan_description(plan, user_id)
     provider = get_payment_provider()
 
     try:
@@ -168,17 +179,29 @@ async def _handle_premium_plan(update: Update, context: ContextTypes.DEFAULT_TYP
         )
     except Exception as e:
         logger.error(f"Ошибка создания платежа: {e}")
-        await query.edit_message_text(texts.PREMIUM_PAY_ERROR)
+        await query.edit_message_text(t("PREMIUM_PAY_ERROR", user_id=user_id))
         return
 
     log_event(user_id, f"premium_checkout_{plan}")
 
     if response.payment_url:
         keyboard = InlineKeyboardMarkup(
-            [[InlineKeyboardButton(texts.PREMIUM_BTN_PAY, url=response.payment_url)]]
+            [
+                [
+                    InlineKeyboardButton(
+                        t("PREMIUM_BTN_PAY", user_id=user_id),
+                        url=response.payment_url,
+                    )
+                ]
+            ]
         )
         await query.edit_message_text(
-            texts.PREMIUM_PAY_LINK.format(amount=int(amount), plan=description),
+            t(
+                "PREMIUM_PAY_LINK",
+                user_id=user_id,
+                amount=int(amount),
+                plan=description,
+            ),
             reply_markup=keyboard,
         )
     elif response.message:
@@ -211,7 +234,7 @@ async def _handle_premium_plan(update: Update, context: ContextTypes.DEFAULT_TYP
             except Exception as e:
                 logger.error(f"Не удалось уведомить admin о premium: {e}")
     else:
-        await query.edit_message_text(texts.PREMIUM_PAY_ERROR)
+        await query.edit_message_text(t("PREMIUM_PAY_ERROR", user_id=user_id))
 
 
 async def grant_premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -250,8 +273,8 @@ async def grant_premium_command(update: Update, context: ContextTypes.DEFAULT_TY
         try:
             await context.bot.send_message(
                 chat_id=target_id,
-                text=texts.PREMIUM_ACTIVATED_USER.format(days=days),
-                reply_markup=premium_setup_keyboard(),
+                text=t("PREMIUM_ACTIVATED_USER", user_id=target_id, days=days),
+                reply_markup=premium_setup_keyboard(target_id),
             )
         except Exception as e:
             logger.error(f"Не удалось уведомить user {target_id}: {e}")

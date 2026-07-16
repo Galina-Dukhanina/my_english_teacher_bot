@@ -13,6 +13,7 @@ from database.db import (
     update_progress,
     sync_progress_words,
 )
+from bot.i18n import t
 from bot.services.challenge import format_challenge_line, mark_active_today
 from bot.services.limits import format_daily_limits_block
 
@@ -41,7 +42,6 @@ def record_activity(user_id: int, activity_type: str):
     progress = get_progress(user_id) or {}
     updates = {"last_active": today}
 
-    # streak_days = активные дни в текущем вызове (для напоминаний и совместимости)
     if user.get("challenge_days") and user.get("challenge_start"):
         mark_active_today(user_id)
         updates["streak_days"] = count_challenge_active_days(
@@ -53,7 +53,7 @@ def record_activity(user_id: int, activity_type: str):
     elif activity_type in (ACTIVITY_WORDS, ACTIVITY_REVIEW, ACTIVITY_GRAMMAR, ACTIVITY_MENU):
         updates["total_dialogs"] = (progress.get("total_dialogs") or 0) + 1
     elif activity_type == ACTIVITY_TOOL:
-        pass  # только last_active и день вызова
+        pass
 
     update_progress(user_id, **updates)
 
@@ -81,7 +81,6 @@ def get_progress_summary(user_id: int) -> dict:
 
 def format_progress_text(user_id: int) -> str:
     """Форматированный блок прогресса."""
-    from bot import texts
     from bot.services.progress_report_service import progress_report_service
 
     summary = get_progress_summary(user_id)
@@ -89,11 +88,13 @@ def format_progress_text(user_id: int) -> str:
     if challenge_line:
         streak_block = challenge_line
     elif summary.get("has_challenge"):
-        streak_block = "🎯 Вызов: данные обновляются..."
+        streak_block = t("CHALLENGE_UPDATING", user_id=user_id)
     else:
-        streak_block = texts.CHALLENGE_NONE
+        streak_block = t("CHALLENGE_NONE", user_id=user_id)
 
-    base = texts.PROGRESS.format(
+    base = t(
+        "PROGRESS",
+        user_id=user_id,
         streak_block=streak_block,
         new_words=summary.get("new_words", 0),
         mastered_words=summary.get("mastered_words", 0),
@@ -103,7 +104,8 @@ def format_progress_text(user_id: int) -> str:
 
     premium_block = progress_report_service.format_block(user_id)
     if premium_block:
-        return f"{base}\n\n{texts.PROGRESS_LIMITS_SEPARATOR}\n\n{premium_block}"
+        sep = t("PROGRESS_LIMITS_SEPARATOR", user_id=user_id)
+        return f"{base}\n\n{sep}\n\n{premium_block}"
     return base
 
 

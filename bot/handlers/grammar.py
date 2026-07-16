@@ -145,8 +145,8 @@ async def start_exercises(source, context, user_id, topic_code):
     limit_result = check_and_consume(user_id, ACTION_GRAMMAR_EXERCISE)
     if not limit_result.allowed:
         await message.reply_text(
-            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
-            reply_markup=keyboards.premium_upsell_keyboard(),
+            get_limit_message(limit_result, user_id) + "\n\n" + upsell_text("not_premium", user_id),
+            reply_markup=keyboards.premium_upsell_keyboard(user_id),
         )
         return
 

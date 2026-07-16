@@ -8,6 +8,7 @@ from telegram.ext import ContextTypes
 from database.db import get_user, update_user, log_event
 from bot import texts
 from bot import keyboards
+from bot.i18n import t, td, get_ui_language, set_ui_language, lang_label, SUPPORTED
 from bot.handlers import commands
 from bot.handlers.dialog import start_language
 from bot.services.reminders import CUSTOM_TIME_KEY, prompt_custom_reminder_time
@@ -18,43 +19,96 @@ logger = logging.getLogger(__name__)
 async def _require_onboarding(update: Update) -> bool:
     user = get_user(update.effective_user.id)
     if not user or not user["onboarding_done"]:
-        await update.message.reply_text("Сначала пройди онбординг: /start")
+        await update.message.reply_text(
+            t("ONBOARDING_REQUIRED", user_id=update.effective_user.id)
+        )
         return False
     return True
 
 
-def _settings_keyboard():
+def _settings_keyboard(user_id: int):
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton(texts.BTN_SETTINGS_LANG, callback_data="settings:lang")],
-            [InlineKeyboardButton(texts.BTN_SETTINGS_LEVEL, callback_data="settings:level")],
-            [InlineKeyboardButton(texts.BTN_SETTINGS_GOAL, callback_data="settings:goal")],
             [
                 InlineKeyboardButton(
-                    texts.BTN_SETTINGS_TIMEZONE, callback_data="settings:timezone"
+                    t("BTN_SETTINGS_UI_LANG", user_id=user_id),
+                    callback_data="settings:uilang",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    texts.BTN_SETTINGS_REMINDERS, callback_data="settings:reminders"
+                    t("BTN_SETTINGS_LANG", user_id=user_id),
+                    callback_data="settings:lang",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    texts.BTN_SETTINGS_CHALLENGE, callback_data="settings:challenge"
+                    t("BTN_SETTINGS_LEVEL", user_id=user_id),
+                    callback_data="settings:level",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    t("BTN_SETTINGS_GOAL", user_id=user_id),
+                    callback_data="settings:goal",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    t("BTN_SETTINGS_TIMEZONE", user_id=user_id),
+                    callback_data="settings:timezone",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    t("BTN_SETTINGS_REMINDERS", user_id=user_id),
+                    callback_data="settings:reminders",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    t("BTN_SETTINGS_CHALLENGE", user_id=user_id),
+                    callback_data="settings:challenge",
                 )
             ],
         ]
     )
 
 
-def _buttons_from_dict(options: dict, prefix: str):
+def _buttons_from_dict(options: dict, prefix: str, user_id: int):
     keyboard = [
         [InlineKeyboardButton(label, callback_data=f"{prefix}:{code}")]
         for code, label in options.items()
     ]
     keyboard.append(
-        [InlineKeyboardButton(texts.BTN_SETTINGS_BACK, callback_data="settings:menu")]
+        [
+            InlineKeyboardButton(
+                t("BTN_SETTINGS_BACK", user_id=user_id),
+                callback_data="settings:menu",
+            )
+        ]
+    )
+    return InlineKeyboardMarkup(keyboard)
+
+
+def _ui_lang_keyboard(user_id: int):
+    current = get_ui_language(user_id)
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                f"{'✓ ' if code == current else ''}{lang_label(code)}",
+                callback_data=f"setuilang:{code}",
+            )
+        ]
+        for code in SUPPORTED
+    ]
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                t("BTN_SETTINGS_BACK", user_id=user_id),
+                callback_data="settings:menu",
+            )
+        ]
     )
     return InlineKeyboardMarkup(keyboard)
 
@@ -68,12 +122,12 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_event(user_id, "settings_open")
 
     await update.message.reply_text(
-        texts.SETTINGS_MENU,
-        reply_markup=keyboards.main_keyboard(),
+        t("SETTINGS_MENU", user_id=user_id),
+        reply_markup=keyboards.main_keyboard(user_id),
     )
     await update.message.reply_text(
-        "Выбери:",
-        reply_markup=_settings_keyboard(),
+        t("CHOOSE_OPTION", user_id=user_id),
+        reply_markup=_settings_keyboard(user_id),
     )
 
 
@@ -83,14 +137,23 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     user_id = query.from_user.id
     user = get_user(user_id)
     if not user or not user["onboarding_done"]:
-        await query.edit_message_text("Сначала пройди онбординг: /start")
+        await query.edit_message_text(t("ONBOARDING_REQUIRED", user_id=user_id))
         return
 
     action = query.data.split(":", 1)[1]
 
     if action == "menu":
         await query.edit_message_text(
-            texts.SETTINGS_MENU, reply_markup=_settings_keyboard()
+            t("SETTINGS_MENU", user_id=user_id),
+            reply_markup=_settings_keyboard(user_id),
+        )
+        return
+
+    if action == "uilang":
+        current = lang_label(get_ui_language(user_id))
+        await query.edit_message_text(
+            t("ASK_UI_LANG", user_id=user_id, current=current),
+            reply_markup=_ui_lang_keyboard(user_id),
         )
         return
 
@@ -104,22 +167,28 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
 
     if action == "level":
         await query.edit_message_text(
-            texts.ASK_LEVEL,
-            reply_markup=_buttons_from_dict(texts.BTN_LEVELS, "setlevel"),
+            t("ASK_LEVEL", user_id=user_id),
+            reply_markup=_buttons_from_dict(
+                td("BTN_LEVELS", user_id=user_id), "setlevel", user_id
+            ),
         )
         return
 
     if action == "goal":
         await query.edit_message_text(
-            texts.ASK_GOAL,
-            reply_markup=_buttons_from_dict(texts.BTN_GOALS, "setgoal"),
+            t("ASK_GOAL", user_id=user_id),
+            reply_markup=_buttons_from_dict(
+                td("BTN_GOALS", user_id=user_id), "setgoal", user_id
+            ),
         )
         return
 
     if action == "timezone":
         await query.edit_message_text(
-            texts.ASK_TIMEZONE,
-            reply_markup=_buttons_from_dict(texts.BTN_TIMEZONES, "settimezone"),
+            t("ASK_TIMEZONE", user_id=user_id),
+            reply_markup=_buttons_from_dict(
+                td("BTN_TIMEZONES", user_id=user_id), "settimezone", user_id
+            ),
         )
         return
 
@@ -135,22 +204,38 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         from bot.services.challenge import challenge_goal_keyboard
 
         await query.edit_message_text(
-            texts.ASK_CHALLENGE,
-            reply_markup=challenge_goal_keyboard(),
+            t("ASK_CHALLENGE", user_id=user_id),
+            reply_markup=challenge_goal_keyboard(user_id),
         )
 
 
 async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Сохранение уровня, цели, timezone из настроек."""
+    """Сохранение уровня, цели, timezone, UI language из настроек."""
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
     step, value = query.data.split(":", 1)
 
+    if step == "setuilang":
+        if value not in SUPPORTED:
+            return
+        set_ui_language(user_id, value)
+        log_event(user_id, "settings_ui_language")
+        label = lang_label(value)
+        await query.edit_message_text(
+            t("UI_LANG_CHANGED", user_id=user_id, lang=label)
+            + t("SETTINGS_MORE", user_id=user_id)
+        )
+        await query.message.reply_text(
+            t("KEYBOARD_UPDATED", user_id=user_id),
+            reply_markup=keyboards.main_keyboard(user_id),
+        )
+        return
+
     labels = {
-        "setlevel": texts.BTN_LEVELS,
-        "setgoal": texts.BTN_GOALS,
-        "settimezone": texts.BTN_TIMEZONES,
+        "setlevel": td("BTN_LEVELS", user_id=user_id),
+        "setgoal": td("BTN_GOALS", user_id=user_id),
+        "settimezone": td("BTN_TIMEZONES", user_id=user_id),
         "settime": texts.BTN_TIMES,
     }
     field_map = {
@@ -168,16 +253,19 @@ async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     if step == "setlevel" and value == "unknown":
+        levels = td("BTN_LEVELS", user_id=user_id)
         await query.edit_message_text(
-            f"{texts.ASK_LEVEL}\n\n⏳ {texts.BTN_LEVELS['unknown']}"
+            f"{t('ASK_LEVEL', user_id=user_id)}\n\n⏳ {levels['unknown']}"
         )
         from bot.handlers.level_test import start_level_test
 
         ok = await start_level_test(query, user_id, during_onboarding=False)
         if not ok:
             await query.message.reply_text(
-                texts.ASK_LEVEL,
-                reply_markup=_buttons_from_dict(texts.BTN_LEVELS, "setlevel"),
+                t("ASK_LEVEL", user_id=user_id),
+                reply_markup=_buttons_from_dict(
+                    td("BTN_LEVELS", user_id=user_id), "setlevel", user_id
+                ),
             )
         return
 
@@ -192,6 +280,6 @@ async def handle_profile_button(update: Update, context: ContextTypes.DEFAULT_TY
 
     label = labels[step][value]
     await query.edit_message_text(
-        texts.SETTINGS_SAVED.format(setting=label)
-        + "\n\n/settings — изменить ещё что-то"
+        t("SETTINGS_SAVED", user_id=user_id, setting=label)
+        + t("SETTINGS_MORE", user_id=user_id)
     )

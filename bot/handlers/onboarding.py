@@ -41,19 +41,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if await maybe_send_challenge_completion(update, user_id):
             await update.message.reply_text(
                 format_welcome_back(user_id),
-                reply_markup=main_keyboard(),
+                reply_markup=main_keyboard(user_id),
             )
             return
 
         profile = get_user(user_id)
         await update.message.reply_text(
             format_welcome_back(user_id),
-            reply_markup=main_keyboard(),
+            reply_markup=main_keyboard(user_id),
         )
         if not profile.get("challenge_days") or not profile.get("challenge_start"):
             await update.message.reply_text(
                 texts.ASK_CHALLENGE,
-                reply_markup=challenge_goal_keyboard(),
+                reply_markup=challenge_goal_keyboard(user_id),
             )
         return
 

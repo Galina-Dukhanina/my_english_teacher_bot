@@ -17,6 +17,7 @@ from database.db import (
 )
 
 from bot import memory, prompts, texts, keyboards
+from bot.i18n import t, td, is_toolbar_button, resolve_toolbar_action
 from bot.handlers import activities
 from config import ADMIN_USER_ID
 from bot.services.ai import get_ai_response, check_limit_alert_pending
@@ -50,15 +51,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Краевой случай: пустое сообщение ---
     if not text or not text.strip():
-        await update.message.reply_text("Напиши мне что-нибудь текстом, и я отвечу.")
+        await update.message.reply_text(t("EMPTY_MESSAGE", user_id=user_id))
         return
 
     # --- Краевой случай: не прошел онбординг ---
     user = get_user(user_id)
     if not user or not user["onboarding_done"]:
-        await update.message.reply_text(
-            "Давай сначала настроим все под тебя. Нажми /start"
-        )
+        await update.message.reply_text(t("ONBOARDING_START", user_id=user_id))
         return
 
     # --- Premium lesson (apply step) ---
@@ -74,7 +73,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # --- Нажата кнопка клавиатуры? ---
-    is_button = text in texts.MENU_BUTTONS
+    is_button = is_toolbar_button(text)
+    toolbar_action = resolve_toolbar_action(text) if is_button else None
 
     # --- Авто-показ меню при первом сообщении за день ---
     # Не показываем, если: это кнопка, бот чего-то ждет, ИЛИ пользователь уже в режиме.
@@ -91,24 +91,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # --- Нажата кнопка? Сбрасываем зависшее ожидание ---
     if is_button:
         set_pending_action(user_id, None)
-        if text in (texts.BTN_MENU, texts.BTN_MAIN):
+        if toolbar_action in ("menu", "main"):
             set_activity(user_id, None)
 
-    if text == texts.BTN_MENU:
+    if toolbar_action == "menu":
         await activities.show_activity_menu(update, context)
         return
-    if text == texts.BTN_MAIN:
+    if toolbar_action == "main":
         from bot.handlers.commands import show_main_menu
 
         await show_main_menu(update, context)
         return
-    if text == texts.BTN_PRONOUNCE:
+    if toolbar_action == "pronounce":
         await start_pronounce(update, context, user_id)
         return
-    if text == texts.BTN_MEANING:
+    if toolbar_action == "meaning":
         await start_meaning(update, context, user_id)
         return
-    if text == texts.BTN_LANG:
+    if toolbar_action == "lang":
         await start_language(update, context, user_id)
         return
 
@@ -141,8 +141,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(texts.PREMIUM_WORD_SAVED)
             else:
                 await update.message.reply_text(
-                    feature_denied_text(PremiumFeature.SAVE_WORD),
-                    reply_markup=keyboards.premium_upsell_keyboard(),
+                    feature_denied_text(PremiumFeature.SAVE_WORD, user_id),
+                    reply_markup=keyboards.premium_upsell_keyboard(user_id),
                 )
         return
 
@@ -152,7 +152,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_topic(user_id, text)
         await update.message.reply_text(
             texts.TALK_TOPIC_SET.format(topic=text),
-            reply_markup=keyboards.main_keyboard(),
+            reply_markup=keyboards.main_keyboard(user_id),
         )
         from bot.handlers.dialog import send_talk_opener
 
@@ -196,7 +196,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Голосовые сообщения пока не поддерживаются."""
     await update.message.reply_text(
         texts.VOICE_NOT_SUPPORTED,
-        reply_markup=keyboards.main_keyboard(),
+        reply_markup=keyboards.main_keyboard(user_id),
     )
 
 
@@ -208,8 +208,8 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
     limit_result = check_and_consume(user_id, ACTION_MESSAGES)
     if not limit_result.allowed:
         await update.message.reply_text(
-            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
-            reply_markup=keyboards.premium_upsell_keyboard(),
+            get_limit_message(limit_result, user_id) + "\n\n" + upsell_text("not_premium", user_id),
+            reply_markup=keyboards.premium_upsell_keyboard(user_id),
         )
         return None
 
@@ -248,7 +248,7 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
     if answer == LIMIT_EXCEEDED_MESSAGE:
         await update.message.reply_text(
             answer,
-            reply_markup=keyboards.main_keyboard(),
+            reply_markup=keyboards.main_keyboard(user_id),
         )
         return None
 
@@ -262,7 +262,7 @@ async def _send_ai_reply(update, context, user_id, user, user_text=None, special
 
     await update.message.reply_text(
         clean_answer,
-        reply_markup=keyboards.main_keyboard(),
+        reply_markup=keyboards.main_keyboard(user_id),
     )
     return clean_answer
 
@@ -276,8 +276,8 @@ async def send_talk_opener(message, context, user_id: int, topic_name: str):
     limit_result = check_and_consume(user_id, ACTION_MESSAGES)
     if not limit_result.allowed:
         await message.reply_text(
-            get_limit_message(limit_result) + "\n\n" + upsell_text("not_premium"),
-            reply_markup=keyboards.premium_upsell_keyboard(),
+            get_limit_message(limit_result, user_id) + "\n\n" + upsell_text("not_premium", user_id),
+            reply_markup=keyboards.premium_upsell_keyboard(user_id),
         )
         return
 
@@ -309,14 +309,14 @@ async def send_talk_opener(message, context, user_id: int, topic_name: str):
             logger.error(f"Не удалось отправить алерт о лимите admin: {e}")
 
     if answer == LIMIT_EXCEEDED_MESSAGE:
-        await message.reply_text(answer, reply_markup=keyboards.main_keyboard())
+        await message.reply_text(answer, reply_markup=keyboards.main_keyboard(user_id))
         return
 
     clean = _strip_markdown(answer)
     memory.add_message(user_id, "assistant", clean)
     log_event(user_id, "talk_opener")
     record_activity(user_id, ACTIVITY_DIALOG)
-    await message.reply_text(clean, reply_markup=keyboards.main_keyboard())
+    await message.reply_text(clean, reply_markup=keyboards.main_keyboard(user_id))
 
 
 # ---------- Инструменты (вызываются кнопками) ----------
@@ -325,13 +325,13 @@ async def send_talk_opener(message, context, user_id: int, topic_name: str):
 async def start_pronounce(update, context, user_id):
     """Кнопка 'Как читается' — ждем слово для транскрипции."""
     set_pending_action(user_id, "wait_pronounce")
-    await update.message.reply_text(texts.ASK_WORD_PRONOUNCE)
+    await update.message.reply_text(t("ASK_WORD_PRONOUNCE", user_id=user_id))
 
 
 async def start_meaning(update, context, user_id):
     """Кнопка 'Непонятно слово' — ждем слово для объяснения."""
     set_pending_action(user_id, "wait_meaning")
-    await update.message.reply_text(texts.ASK_WORD_MEANING)
+    await update.message.reply_text(t("ASK_WORD_MEANING", user_id=user_id))
 
 
 async def start_language(update, context, user_id):
@@ -339,14 +339,15 @@ async def start_language(update, context, user_id):
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
     user = get_user(user_id)
-    current = texts.LANG_NAMES.get(user["explanation_language"], "автоматически")
+    lang_names = td("LANG_NAMES", user_id=user_id)
+    current = lang_names.get(user["explanation_language"], lang_names.get("auto", ""))
 
     keyboard = [
         [InlineKeyboardButton(label, callback_data=f"setlang:{code}")]
-        for code, label in texts.BTN_LANGS.items()
+        for code, label in td("BTN_LANGS", user_id=user_id).items()
     ]
     await update.message.reply_text(
-        texts.ASK_LANG.format(current=current),
+        t("ASK_LANG", user_id=user_id, current=current),
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
@@ -358,7 +359,8 @@ async def handle_language_button(update, context):
     user_id = query.from_user.id
     _, lang = query.data.split(":", 1)
     update_user(user_id, explanation_language=lang)
-    memory.clear_history(user_id)  # сбрасываем историю, чтобы убрать инерцию языка
+    memory.clear_history(user_id)
+    lang_names = td("LANG_NAMES", user_id=user_id)
     await query.edit_message_text(
-        texts.LANG_CHANGED.format(lang=texts.LANG_NAMES[lang])
+        t("LANG_CHANGED", user_id=user_id, lang=lang_names.get(lang, lang))
     )

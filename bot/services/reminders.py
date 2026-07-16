@@ -87,7 +87,7 @@ async def submit_custom_reminder_time(update, context, user_id: int, text: str):
 
     await update.message.reply_text(
         texts.REMINDER_TIME_SAVED.format(time=parsed),
-        reply_markup=keyboards.main_keyboard(),
+        reply_markup=keyboards.main_keyboard(user_id),
     )
 
     if fields.get("onboarding_step") == "streakgoal":
@@ -95,7 +95,7 @@ async def submit_custom_reminder_time(update, context, user_id: int, text: str):
 
         await update.message.reply_text(
             texts.ASK_CHALLENGE,
-            reply_markup=challenge_goal_keyboard(),
+            reply_markup=challenge_goal_keyboard(user_id),
         )
 
 

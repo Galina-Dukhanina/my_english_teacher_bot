@@ -5,7 +5,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
-from bot import texts
+from bot.i18n import t
 from bot.services.diagnostic_service import (
     KIND_DIAGNOSTIC,
     QUESTIONS,
@@ -27,12 +27,12 @@ def _question_keyboard(q_index: int, q) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(rows)
 
 
-def diagnostic_keyboard() -> InlineKeyboardMarkup:
+def diagnostic_keyboard(user_id: int | None = None) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
-                    texts.BTN_DIAGNOSTIC_START,
+                    t("BTN_DIAGNOSTIC_START", user_id=user_id),
                     callback_data="diag:start",
                 )
             ]
@@ -40,11 +40,20 @@ def diagnostic_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def _blocked_message(reason: str, user_id: int) -> str:
+    if reason == "not_premium":
+        return t("DIAG_NOT_PREMIUM", user_id=user_id)
+    if reason == "setup_required":
+        return t("DIAG_SETUP_REQUIRED", user_id=user_id)
+    if reason == "already_done":
+        return t("DIAG_ALREADY_DONE", user_id=user_id)
+    return t("DIAG_UNAVAILABLE", user_id=user_id)
+
+
 async def start_diagnostic(message, user_id: int) -> bool:
     allowed, reason = can_take_diagnostic(user_id)
     if not allowed:
-        text = _blocked_message(reason)
-        await message.reply_text(text)
+        await message.reply_text(_blocked_message(reason, user_id))
         return False
 
     save_session(
@@ -53,25 +62,15 @@ async def start_diagnostic(message, user_id: int) -> bool:
         {"index": 0, "answers": []},
     )
     log_event(user_id, "diagnostic_start")
-    await message.reply_text(texts.DIAG_INTRO)
-    await _send_question(message, 0)
+    await message.reply_text(t("DIAG_INTRO", user_id=user_id))
+    await _send_question(message, user_id, 0)
     return True
 
 
-def _blocked_message(reason: str) -> str:
-    if reason == "not_premium":
-        return texts.DIAG_NOT_PREMIUM
-    if reason == "setup_required":
-        return texts.DIAG_SETUP_REQUIRED
-    if reason == "already_done":
-        return texts.DIAG_ALREADY_DONE
-    return texts.DIAG_UNAVAILABLE
-
-
-async def _send_question(message, index: int):
+async def _send_question(message, user_id: int, index: int):
     q = QUESTIONS[index]
     total = len(QUESTIONS)
-    header = texts.DIAG_QUESTION.format(n=index + 1, total=total)
+    header = t("DIAG_QUESTION", user_id=user_id, n=index + 1, total=total)
     body = q.text
     if q.passage:
         body = f"{q.passage}\n\n{q.text}"
@@ -92,24 +91,24 @@ async def handle_diagnostic_callback(update: Update, context: ContextTypes.DEFAU
     if action == "start":
         allowed, reason = can_take_diagnostic(user_id)
         if not allowed:
-            await query.edit_message_text(_blocked_message(reason))
+            await query.edit_message_text(_blocked_message(reason, user_id))
             return
         save_session(user_id, KIND_DIAGNOSTIC, {"index": 0, "answers": []})
         log_event(user_id, "diagnostic_start")
-        await query.edit_message_text(texts.DIAG_INTRO)
-        await _send_question(query.message, 0)
+        await query.edit_message_text(t("DIAG_INTRO", user_id=user_id))
+        await _send_question(query.message, user_id, 0)
         return
 
     session = get_session(user_id, KIND_DIAGNOSTIC)
     if not session:
-        await query.edit_message_text(texts.DIAG_EXPIRED)
+        await query.edit_message_text(t("DIAG_EXPIRED", user_id=user_id))
         return
 
     q_index = int(parts[1])
     opt_idx = int(parts[2])
 
     if q_index != session.get("index", 0):
-        await query.edit_message_text(texts.DIAG_EXPIRED)
+        await query.edit_message_text(t("DIAG_EXPIRED", user_id=user_id))
         clear_session(user_id, KIND_DIAGNOSTIC)
         return
 
@@ -121,7 +120,11 @@ async def handle_diagnostic_callback(update: Update, context: ContextTypes.DEFAU
 
     chosen = q.options[opt_idx]
     correct = q.options[q.correct]
-    feedback = texts.DIAG_CORRECT if is_correct else texts.DIAG_WRONG.format(answer=correct)
+    feedback = (
+        t("DIAG_CORRECT", user_id=user_id)
+        if is_correct
+        else t("DIAG_WRONG", user_id=user_id, answer=correct)
+    )
 
     next_index = q_index + 1
     session["index"] = next_index
@@ -131,13 +134,13 @@ async def handle_diagnostic_callback(update: Update, context: ContextTypes.DEFAU
     if q.passage:
         shown = f"{q.passage}\n\n{q.text}"
     await query.edit_message_text(
-        f"{texts.DIAG_QUESTION.format(n=q_index + 1, total=len(QUESTIONS))}\n\n"
+        f"{t('DIAG_QUESTION', user_id=user_id, n=q_index + 1, total=len(QUESTIONS))}\n\n"
         f"{shown}\n\n"
-        f"Твой ответ: {chosen}\n{feedback}"
+        f"{t('DIAG_YOUR_ANSWER', user_id=user_id, answer=chosen)}\n{feedback}"
     )
 
     if next_index < len(QUESTIONS):
-        await _send_question(query.message, next_index)
+        await _send_question(query.message, user_id, next_index)
         return
 
     await _finish(query.message, user_id, answers)
@@ -148,13 +151,20 @@ async def _finish(message, user_id: int, answers: list[bool]):
     clear_session(user_id, KIND_DIAGNOSTIC)
     log_event(user_id, "diagnostic_done")
     await message.reply_text(
-        texts.DIAG_RESULT.format(profile=format_skill_profile(skills))
+        t(
+            "DIAG_RESULT",
+            user_id=user_id,
+            profile=format_skill_profile(skills),
+        )
     )
     from bot.handlers.premium_lesson import premium_lesson_keyboard
 
     markup = premium_lesson_keyboard(user_id)
     if markup:
-        await message.reply_text(texts.DIAG_AFTER_SETUP_LESSON, reply_markup=markup)
+        await message.reply_text(
+            t("DIAG_AFTER_SETUP_LESSON", user_id=user_id),
+            reply_markup=markup,
+        )
 
 
 def needs_diagnostic(user_id: int) -> bool:

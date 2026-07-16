@@ -29,7 +29,7 @@ async def maybe_send_challenge_completion(
     message = update.message or update.callback_query.message
     await message.reply_text(
         format_completion_message(completion),
-        reply_markup=challenge_goal_keyboard(),
+        reply_markup=challenge_goal_keyboard(user_id),
     )
     return True
 
@@ -60,7 +60,7 @@ async def handle_streak_goal(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         await query.message.reply_text(
             texts.ONBOARDING_DONE,
-            reply_markup=main_keyboard(),
+            reply_markup=main_keyboard(user_id),
         )
         return
 

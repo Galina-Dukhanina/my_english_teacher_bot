@@ -78,6 +78,7 @@ def check_imports() -> bool:
         "bot.services.daily_phrase_service",
         "bot.services.progress_report_service",
         "bot.services.activation_notify",
+        "bot.i18n",
     ]
     ok = True
     for name in modules:
@@ -119,6 +120,10 @@ def check_db() -> bool:
             "SELECT name FROM sqlite_master WHERE type='table'"
         ).fetchall()
     }
+    user_cols = {
+        row[1]
+        for row in conn.execute("PRAGMA table_info(users)").fetchall()
+    }
     conn.close()
 
     required = {
@@ -138,6 +143,10 @@ def check_db() -> bool:
             _ok(f"table {table}")
         else:
             ok = _fail(f"нет таблицы {table}") and ok
+    if "ui_language" in user_cols:
+        _ok("users.ui_language")
+    else:
+        ok = _fail("нет колонки users.ui_language") and ok
     return ok
 
 

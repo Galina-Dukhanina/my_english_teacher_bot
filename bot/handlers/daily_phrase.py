@@ -5,7 +5,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
-from bot import texts
+from bot.i18n import t
 from bot.handlers.premium_lesson import premium_lesson_keyboard
 from bot.services.daily_phrase_service import daily_phrase_service
 from database.db import log_event
@@ -23,7 +23,7 @@ def _phrase_keyboard(user_id: int) -> InlineKeyboardMarkup | None:
 async def send_daily_phrase(message, user_id: int) -> bool:
     phrase = daily_phrase_service.get_phrase(user_id)
     if not phrase:
-        await message.reply_text(texts.DAILY_PHRASE_UNAVAILABLE)
+        await message.reply_text(t("DAILY_PHRASE_UNAVAILABLE", user_id=user_id))
         return False
     await message.reply_text(
         daily_phrase_service.format_message(phrase),
@@ -44,7 +44,7 @@ async def handle_phrase_callback(update: Update, context: ContextTypes.DEFAULT_T
 
     phrase = daily_phrase_service.get_phrase(user_id)
     if not phrase:
-        await query.message.reply_text(texts.DAILY_PHRASE_UNAVAILABLE)
+        await query.message.reply_text(t("DAILY_PHRASE_UNAVAILABLE", user_id=user_id))
         return
 
     await query.message.reply_text(
@@ -60,6 +60,11 @@ def premium_menu_keyboard(user_id: int) -> InlineKeyboardMarkup:
     if lesson_kb:
         rows.extend(lesson_kb.inline_keyboard)
     rows.append(
-        [InlineKeyboardButton(texts.BTN_DAILY_PHRASE, callback_data="phrase:today")]
+        [
+            InlineKeyboardButton(
+                t("BTN_DAILY_PHRASE", user_id=user_id),
+                callback_data="phrase:today",
+            )
+        ]
     )
     return InlineKeyboardMarkup(rows)

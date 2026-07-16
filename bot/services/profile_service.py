@@ -96,7 +96,7 @@ class ProfileService:
             cefr_level=cefr,
             display_level=display_level,
             goal=goal,
-            ui_language="ru",
+            ui_language=(user.get("ui_language") or "ru"),
         )
 
         fields = {

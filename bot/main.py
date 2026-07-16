@@ -94,7 +94,7 @@ def main():
     app.add_handler(
         CallbackQueryHandler(
             settings.handle_profile_button,
-            pattern=r"^set(level|goal|timezone|time):",
+            pattern=r"^set(level|goal|timezone|time|uilang):",
         )
     )
 

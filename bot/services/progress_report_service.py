@@ -6,6 +6,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from bot.i18n import t, td
 from bot.repositories.curriculum_repo import CurriculumRepository
 from bot.repositories.learning_item_repo import LearningItemRepository
 from bot.repositories.learning_profile_repo import LearningProfileRepository
@@ -55,11 +56,10 @@ class ProgressReportService:
 
         profile = self._profiles.get(user_id) or {}
         goal = profile.get("goal") or "self"
-        from bot import texts
 
         report = PremiumProgressReport(
             goal=goal,
-            goal_label=texts.BTN_GOALS.get(goal, goal),
+            goal_label=td("BTN_GOALS", user_id=user_id).get(goal, goal),
             cefr_level=profile.get("cefr_level") or "A1",
             daily_minutes=int(profile.get("daily_minutes") or 15),
             weak_skill=profile.get("weak_skill"),
@@ -132,14 +132,14 @@ class ProgressReportService:
         if not report:
             return None
 
-        from bot import texts
-
         if report.setup_required:
-            return texts.PREMIUM_PROGRESS_SETUP
+            return t("PREMIUM_PROGRESS_SETUP", user_id=user_id)
 
         lines = [
-            texts.PREMIUM_PROGRESS_HEADER,
-            texts.PREMIUM_PROGRESS_PROGRAM.format(
+            t("PREMIUM_PROGRESS_HEADER", user_id=user_id),
+            t(
+                "PREMIUM_PROGRESS_PROGRAM",
+                user_id=user_id,
                 goal=report.goal_label,
                 level=report.cefr_level,
                 minutes=report.daily_minutes,
@@ -147,11 +147,14 @@ class ProgressReportService:
         ]
 
         if report.module_title:
-            status_label = texts.PREMIUM_MODULE_STATUS.get(
+            status_labels = td("PREMIUM_MODULE_STATUS", user_id=user_id)
+            status_label = status_labels.get(
                 report.module_status or "", report.module_status or "—"
             )
             lines.append(
-                texts.PREMIUM_PROGRESS_MODULE.format(
+                t(
+                    "PREMIUM_PROGRESS_MODULE",
+                    user_id=user_id,
                     module=report.module_title,
                     completed=report.lessons_completed,
                     total=report.lessons_total,
@@ -160,22 +163,28 @@ class ProgressReportService:
             )
             if report.current_lesson_title:
                 lines.append(
-                    texts.PREMIUM_PROGRESS_CURRENT_LESSON.format(
-                        lesson=report.current_lesson_title
+                    t(
+                        "PREMIUM_PROGRESS_CURRENT_LESSON",
+                        user_id=user_id,
+                        lesson=report.current_lesson_title,
                     )
                 )
 
         if report.skills:
             lines.append(
-                texts.PREMIUM_PROGRESS_SKILLS.format(
-                    profile=format_skill_profile(report.skills)
+                t(
+                    "PREMIUM_PROGRESS_SKILLS",
+                    user_id=user_id,
+                    profile=format_skill_profile(report.skills),
                 )
             )
         elif not report.setup_required:
-            lines.append(texts.PREMIUM_PROGRESS_NO_DIAG)
+            lines.append(t("PREMIUM_PROGRESS_NO_DIAG", user_id=user_id))
 
         lines.append(
-            texts.PREMIUM_PROGRESS_SRS.format(
+            t(
+                "PREMIUM_PROGRESS_SRS",
+                user_id=user_id,
                 due=report.srs_due,
                 learning=report.srs_learning,
                 mastered=report.srs_mastered,
@@ -184,7 +193,9 @@ class ProgressReportService:
 
         if report.exercise_total or report.apply_total:
             lines.append(
-                texts.PREMIUM_PROGRESS_SCORES.format(
+                t(
+                    "PREMIUM_PROGRESS_SCORES",
+                    user_id=user_id,
                     ex_correct=report.exercise_correct,
                     ex_total=report.exercise_total,
                     apply_passed=report.apply_passed,
@@ -193,11 +204,17 @@ class ProgressReportService:
             )
 
         if report.weak_skill:
+            from bot import texts
+
             skill_label = texts.DIAG_SKILL_LABELS.get(
                 report.weak_skill, report.weak_skill
             )
             lines.append(
-                texts.PREMIUM_PROGRESS_WEAK_SKILL.format(skill=skill_label)
+                t(
+                    "PREMIUM_PROGRESS_WEAK_SKILL",
+                    user_id=user_id,
+                    skill=skill_label,
+                )
             )
 
         return "\n".join(lines)

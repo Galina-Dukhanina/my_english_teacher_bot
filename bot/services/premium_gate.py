@@ -11,6 +11,7 @@ from config import (
     YOOKASSA_SECRET_KEY,
     YOOKASSA_SHOP_ID,
 )
+from bot.i18n import t
 from bot.services.profile_service import profile_service
 from bot.services.subscription import is_premium
 
@@ -66,38 +67,39 @@ def check_feature(user_id: int, feature: PremiumFeature) -> PremiumAccess:
     return PremiumAccess(True)
 
 
-def upsell_text(reason: str, *, feature: PremiumFeature | None = None) -> str:
-    from bot import texts
-
+def upsell_text(reason: str, user_id: int | None = None, *, feature: PremiumFeature | None = None) -> str:
     del feature
     if reason == PremiumDenyReason.SETUP_REQUIRED:
-        return texts.PREMIUM_SETUP_REQUIRED_SHORT
+        return t("PREMIUM_SETUP_REQUIRED_SHORT", user_id=user_id)
     if reason == PremiumDenyReason.SALES_DISABLED:
-        return texts.PREMIUM_COMING_SOON
+        return t("PREMIUM_COMING_SOON", user_id=user_id)
     if sales_enabled():
-        return texts.PREMIUM_UPSELL_SALES
-    return texts.PREMIUM_UPSELL
+        return t("PREMIUM_UPSELL_SALES", user_id=user_id)
+    return t("PREMIUM_UPSELL", user_id=user_id)
 
 
-def feature_denied_text(feature: PremiumFeature) -> str:
-    from bot import texts
-
+def feature_denied_text(feature: PremiumFeature, user_id: int | None = None) -> str:
     mapping = {
-        PremiumFeature.SAVE_WORD: texts.PREMIUM_WORD_HINT,
-        PremiumFeature.ADDWORD: texts.ADDWORD_PREMIUM_ONLY,
-        PremiumFeature.PROGRAM: texts.PREMIUM_PROGRAM_ONLY,
+        PremiumFeature.SAVE_WORD: "PREMIUM_WORD_HINT",
+        PremiumFeature.ADDWORD: "ADDWORD_PREMIUM_ONLY",
+        PremiumFeature.PROGRAM: "PREMIUM_PROGRAM_ONLY",
     }
     if sales_enabled():
         sales_mapping = {
-            PremiumFeature.SAVE_WORD: texts.PREMIUM_WORD_HINT_SALES,
-            PremiumFeature.ADDWORD: texts.ADDWORD_PREMIUM_ONLY_SALES,
-            PremiumFeature.PROGRAM: texts.PREMIUM_PROGRAM_ONLY_SALES,
+            PremiumFeature.SAVE_WORD: "PREMIUM_WORD_HINT_SALES",
+            PremiumFeature.ADDWORD: "ADDWORD_PREMIUM_ONLY_SALES",
+            PremiumFeature.PROGRAM: "PREMIUM_PROGRAM_ONLY_SALES",
         }
-        return sales_mapping.get(feature, upsell_text(PremiumDenyReason.NOT_PREMIUM))
-    return mapping.get(feature, upsell_text(PremiumDenyReason.NOT_PREMIUM))
+        key = sales_mapping.get(feature)
+        if key:
+            return t(key, user_id=user_id)
+    key = mapping.get(feature)
+    if key:
+        return t(key, user_id=user_id)
+    return upsell_text(PremiumDenyReason.NOT_PREMIUM, user_id=user_id)
 
 
-def premium_help_line() -> str:
+def premium_help_line(user_id: int | None = None) -> str:
     from bot import texts
 
     if sales_enabled():

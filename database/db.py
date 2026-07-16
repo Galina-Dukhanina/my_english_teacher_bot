@@ -60,6 +60,7 @@ def migrate_db():
             "challenge_days": "INTEGER",
             "challenge_start": "TEXT",
             "level_test_at": "TEXT",
+            "ui_language": "TEXT DEFAULT 'ru'",
         },
         "vocabulary": {
             "transcription": "TEXT",

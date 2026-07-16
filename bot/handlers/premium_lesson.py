@@ -6,7 +6,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
-from bot import texts
+from bot.i18n import t
 from bot.repositories.attempt_repo import AttemptRepository
 from bot.repositories.learning_profile_repo import LearningProfileRepository
 from bot.services.ai_gateway import check_writing
@@ -17,32 +17,59 @@ from database.db import log_event
 logger = logging.getLogger(__name__)
 
 
-def _continue_keyboard() -> InlineKeyboardMarkup:
+def _continue_keyboard(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(texts.BTN_LESSON_CONTINUE, callback_data="lesson:go")]]
+        [
+            [
+                InlineKeyboardButton(
+                    t("BTN_LESSON_CONTINUE", user_id=user_id),
+                    callback_data="lesson:go",
+                )
+            ]
+        ]
     )
 
 
-def _review_keyboard() -> InlineKeyboardMarkup:
+def _review_keyboard(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton(texts.BTN_LESSON_REVIEW_KNEW, callback_data="lesson:rev:1")],
             [
-                InlineKeyboardButton(texts.BTN_LESSON_REVIEW_HINT, callback_data="lesson:rev:2"),
-                InlineKeyboardButton(texts.BTN_LESSON_REVIEW_FORGOT, callback_data="lesson:rev:0"),
+                InlineKeyboardButton(
+                    t("BTN_LESSON_REVIEW_KNEW", user_id=user_id),
+                    callback_data="lesson:rev:1",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    t("BTN_LESSON_REVIEW_HINT", user_id=user_id),
+                    callback_data="lesson:rev:2",
+                ),
+                InlineKeyboardButton(
+                    t("BTN_LESSON_REVIEW_FORGOT", user_id=user_id),
+                    callback_data="lesson:rev:0",
+                ),
             ],
         ]
     )
 
 
-def _review_next_keyboard(result_code: str) -> InlineKeyboardMarkup:
+def _review_next_keyboard(user_id: int, result_code: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(texts.BTN_LESSON_REVIEW_NEXT, callback_data=f"lesson:revnext:{result_code}")]]
+        [
+            [
+                InlineKeyboardButton(
+                    t("BTN_LESSON_REVIEW_NEXT", user_id=user_id),
+                    callback_data=f"lesson:revnext:{result_code}",
+                )
+            ]
+        ]
     )
 
 
-def _lesson_header(session: dict) -> str:
-    return texts.LESSON_HEADER.format(
+def _lesson_header(session: dict, user_id: int) -> str:
+    return t(
+        "LESSON_HEADER",
+        user_id=user_id,
         module=session.get("module_title", ""),
         lesson=session.get("lesson_title", ""),
         day=session.get("day_number", ""),
@@ -58,49 +85,54 @@ def _current_review_item(step: dict) -> tuple[dict | None, int, int]:
     return items[index], index + 1, len(items)
 
 
-def render_step_message(session: dict, step: dict) -> str:
-    header = _lesson_header(session)
+def render_step_message(session: dict, step: dict, user_id: int) -> str:
+    header = _lesson_header(session, user_id)
     step_type = step["step_type"]
     payload = step.get("payload") or {}
 
     if step_type == "review":
         item, current, total = _current_review_item(step)
         if not item:
-            return f"{header}\n\n{texts.LESSON_REVIEW_DONE}"
-        return f"{header}\n\n{texts.LESSON_STEP_REVIEW.format(current=current, total=total, phrase_ru=item.get('phrase_ru', ''))}"
+            return f"{header}\n\n{t('LESSON_REVIEW_DONE', user_id=user_id)}"
+        return (
+            f"{header}\n\n"
+            f"{t('LESSON_STEP_REVIEW', user_id=user_id, current=current, total=total, phrase_ru=item.get('phrase_ru', ''))}"
+        )
 
     if step_type == "phrase":
         en = payload.get("phrase_en", "")
         ru = payload.get("phrase_ru", "")
-        body = texts.LESSON_STEP_PHRASE.format(phrase_en=en, phrase_ru=ru)
+        body = t("LESSON_STEP_PHRASE", user_id=user_id, phrase_en=en, phrase_ru=ru)
         return f"{header}\n\n{body}"
 
     if step_type == "explain":
         title = payload.get("title_ru", "")
         body = payload.get("body_ru", "")
-        return f"{header}\n\n{texts.LESSON_STEP_EXPLAIN.format(title=title, body=body)}"
+        return f"{header}\n\n{t('LESSON_STEP_EXPLAIN', user_id=user_id, title=title, body=body)}"
 
     if step_type == "exercise":
         question = payload.get("question", "")
-        return f"{header}\n\n{texts.LESSON_STEP_EXERCISE.format(question=question)}"
+        return f"{header}\n\n{t('LESSON_STEP_EXERCISE', user_id=user_id, question=question)}"
 
     if step_type == "apply":
-        prompt = payload.get("prompt_ru", texts.LESSON_STEP_APPLY_DEFAULT)
-        return f"{header}\n\n{texts.LESSON_STEP_APPLY.format(prompt=prompt)}"
+        prompt = payload.get(
+            "prompt_ru", t("LESSON_STEP_APPLY_DEFAULT", user_id=user_id)
+        )
+        return f"{header}\n\n{t('LESSON_STEP_APPLY', user_id=user_id, prompt=prompt)}"
 
-    return f"{header}\n\n{texts.LESSON_STEP_UNKNOWN}"
+    return f"{header}\n\n{t('LESSON_STEP_UNKNOWN', user_id=user_id)}"
 
 
-def render_step_keyboard(step: dict) -> InlineKeyboardMarkup | None:
+def render_step_keyboard(step: dict, user_id: int) -> InlineKeyboardMarkup | None:
     step_type = step["step_type"]
     if step_type == "review":
         item, _, _ = _current_review_item(step)
         if not item:
-            return _continue_keyboard()
-        return _review_keyboard()
+            return _continue_keyboard(user_id)
+        return _review_keyboard(user_id)
 
     if step_type in {"phrase", "explain"}:
-        return _continue_keyboard()
+        return _continue_keyboard(user_id)
 
     if step_type == "exercise":
         payload = step.get("payload") or {}
@@ -111,16 +143,28 @@ def render_step_keyboard(step: dict) -> InlineKeyboardMarkup | None:
             for i, opt in enumerate(options)
         ]
         rows.append(
-            [InlineKeyboardButton(texts.BTN_LESSON_STOP, callback_data="lesson:stop")]
+            [
+                InlineKeyboardButton(
+                    t("BTN_LESSON_STOP", user_id=user_id),
+                    callback_data="lesson:stop",
+                )
+            ]
         )
         return InlineKeyboardMarkup(rows)
 
     if step_type == "apply":
         return InlineKeyboardMarkup(
-            [[InlineKeyboardButton(texts.BTN_LESSON_STOP, callback_data="lesson:stop")]]
+            [
+                [
+                    InlineKeyboardButton(
+                        t("BTN_LESSON_STOP", user_id=user_id),
+                        callback_data="lesson:stop",
+                    )
+                ]
+            ]
         )
 
-    return _continue_keyboard()
+    return _continue_keyboard(user_id)
 
 
 def premium_lesson_keyboard(user_id: int) -> InlineKeyboardMarkup | None:
@@ -128,10 +172,10 @@ def premium_lesson_keyboard(user_id: int) -> InlineKeyboardMarkup | None:
     if not ok:
         return None
     if reason == "resume":
-        label = texts.BTN_LESSON_RESUME
+        label = t("BTN_LESSON_RESUME", user_id=user_id)
         data = "lesson:resume"
     else:
-        label = texts.BTN_LESSON_START
+        label = t("BTN_LESSON_START", user_id=user_id)
         data = "lesson:start"
     return InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data=data)]])
 
@@ -154,8 +198,8 @@ async def send_current_step(message, user_id: int, session: dict):
 
     step_index = session.get("step_index", 0)
     step = {**step, "_index": step_index}
-    text = render_step_message(session, step)
-    keyboard = render_step_keyboard(step)
+    text = render_step_message(session, step, user_id)
+    keyboard = render_step_keyboard(step, user_id)
     session["awaiting_text"] = step["step_type"] == "apply"
     save_session(user_id, KIND_LESSON, session)
     await message.reply_text(text, reply_markup=keyboard)
@@ -168,7 +212,9 @@ async def _finish(message, user_id: int, session: dict):
     apply_passed = summary.get("apply_passed", 0)
     apply_total = summary.get("apply_total", 0)
     await message.reply_text(
-        texts.LESSON_COMPLETE.format(
+        t(
+            "LESSON_COMPLETE",
+            user_id=user_id,
             correct=correct,
             total=total,
             apply_passed=apply_passed,
@@ -188,10 +234,14 @@ async def _after_review_answer(query, user_id: int, session: dict, result_code: 
         return
 
     if result_code == "2":
-        hint_text = texts.LESSON_REVIEW_HINT.format(phrase_en=item.get("phrase_en", ""))
+        hint_text = t(
+            "LESSON_REVIEW_HINT",
+            user_id=user_id,
+            phrase_en=item.get("phrase_en", ""),
+        )
         await query.edit_message_text(
-            f"{render_step_message(session, step)}\n\n{hint_text}",
-            reply_markup=_review_next_keyboard("2"),
+            f"{render_step_message(session, step, user_id)}\n\n{hint_text}",
+            reply_markup=_review_next_keyboard(user_id, "2"),
         )
         return
 
@@ -199,17 +249,21 @@ async def _after_review_answer(query, user_id: int, session: dict, result_code: 
         user_id, session, item["id"], result_code
     )
     if result_code == "0":
-        feedback = texts.LESSON_REVIEW_WRONG.format(
-            phrase_en=(outcome or {}).get("phrase_en", item.get("phrase_en", ""))
+        feedback = t(
+            "LESSON_REVIEW_WRONG",
+            user_id=user_id,
+            phrase_en=(outcome or {}).get("phrase_en", item.get("phrase_en", "")),
         )
         await query.edit_message_text(
-            f"{render_step_message(session, step)}\n\n{feedback}",
-            reply_markup=_review_next_keyboard("0"),
+            f"{render_step_message(session, step, user_id)}\n\n{feedback}",
+            reply_markup=_review_next_keyboard(user_id, "0"),
         )
         return
 
-    feedback = texts.LESSON_REVIEW_CORRECT
-    await query.edit_message_text(f"{render_step_message(session, step)}\n\n{feedback}")
+    feedback = t("LESSON_REVIEW_CORRECT", user_id=user_id)
+    await query.edit_message_text(
+        f"{render_step_message(session, step, user_id)}\n\n{feedback}"
+    )
     session = lesson_runner.advance_review(user_id, session)
     session = lesson_runner.get_session(user_id)
     if session:
@@ -226,30 +280,30 @@ async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_T
     if action == "start":
         session = lesson_runner.begin_next_lesson(user_id)
         if not session:
-            await query.edit_message_text(texts.LESSON_NONE)
+            await query.edit_message_text(t("LESSON_NONE", user_id=user_id))
             return
         log_event(user_id, "lesson_start_ui")
-        await query.message.reply_text(texts.LESSON_STARTED)
+        await query.message.reply_text(t("LESSON_STARTED", user_id=user_id))
         await send_current_step(query.message, user_id, session)
         return
 
     if action == "resume":
         session = lesson_runner.resume_lesson(user_id)
         if not session:
-            await query.edit_message_text(texts.LESSON_EXPIRED)
+            await query.edit_message_text(t("LESSON_EXPIRED", user_id=user_id))
             return
-        await query.message.reply_text(texts.LESSON_RESUMED)
+        await query.message.reply_text(t("LESSON_RESUMED", user_id=user_id))
         await send_current_step(query.message, user_id, session)
         return
 
     if action == "stop":
         lesson_runner.cancel_lesson(user_id)
-        await query.edit_message_text(texts.LESSON_STOPPED)
+        await query.edit_message_text(t("LESSON_STOPPED", user_id=user_id))
         return
 
     session = lesson_runner.get_session(user_id)
     if not session:
-        await query.edit_message_text(texts.LESSON_EXPIRED)
+        await query.edit_message_text(t("LESSON_EXPIRED", user_id=user_id))
         return
 
     if action == "go":
@@ -285,7 +339,7 @@ async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_T
         step_index = int(parts[2])
         opt_index = int(parts[3])
         if step_index != session.get("step_index", 0):
-            await query.edit_message_text(texts.LESSON_EXPIRED)
+            await query.edit_message_text(t("LESSON_EXPIRED", user_id=user_id))
             lesson_runner.cancel_lesson(user_id)
             return
 
@@ -303,15 +357,18 @@ async def handle_lesson_callback(update: Update, context: ContextTypes.DEFAULT_T
         is_correct = opt_index == correct_idx
         lesson_runner.record_exercise_result(user_id, session, correct=is_correct)
         if is_correct:
-            feedback = texts.LESSON_EXERCISE_CORRECT
+            feedback = t("LESSON_EXERCISE_CORRECT", user_id=user_id)
         else:
-            feedback = texts.LESSON_EXERCISE_WRONG.format(
-                answer=options[correct_idx] if correct_idx < len(options) else "—"
+            feedback = t(
+                "LESSON_EXERCISE_WRONG",
+                user_id=user_id,
+                answer=options[correct_idx] if correct_idx < len(options) else "—",
             )
 
+        step = {**step, "_index": step_index}
         await query.edit_message_text(
-            f"{render_step_message(session, step)}\n\n"
-            f"Твой ответ: {chosen}\n{feedback}"
+            f"{render_step_message(session, step, user_id)}\n\n"
+            f"{t('LESSON_YOUR_ANSWER', user_id=user_id, answer=chosen)}\n{feedback}"
         )
 
         lesson_runner.advance(user_id, session)
@@ -337,22 +394,23 @@ async def handle_lesson_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     words = [w for w in text.split() if w]
     if len(words) < min_words:
         await update.message.reply_text(
-            texts.LESSON_APPLY_TOO_SHORT.format(min_words=min_words)
+            t("LESSON_APPLY_TOO_SHORT", user_id=user_id, min_words=min_words)
         )
         return True
 
     session["awaiting_text"] = False
     save_session(user_id, KIND_LESSON, session)
-    await update.message.reply_text(texts.LESSON_APPLY_CHECKING)
+    await update.message.reply_text(t("LESSON_APPLY_CHECKING", user_id=user_id))
     await context.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.TYPING
     )
 
     profile = LearningProfileRepository().get(user_id) or {}
     ctx = lesson_runner.lesson_context_for_apply(session)
+    default_prompt = t("LESSON_STEP_APPLY_DEFAULT", user_id=user_id)
     result, error_message = check_writing(
         user_id,
-        prompt_ru=payload.get("prompt_ru", texts.LESSON_STEP_APPLY_DEFAULT),
+        prompt_ru=payload.get("prompt_ru", default_prompt),
         user_text=text,
         cefr_level=profile.get("cefr_level") or "A1",
         phrase_en=ctx.get("phrase_en", ""),
@@ -377,16 +435,20 @@ async def handle_lesson_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             score=result.score,
         )
         if result.passed:
-            feedback = texts.LESSON_APPLY_PASSED.format(feedback=result.feedback_ru)
+            feedback = t(
+                "LESSON_APPLY_PASSED", user_id=user_id, feedback=result.feedback_ru
+            )
         else:
             corrected = result.corrected_text or text
-            feedback = texts.LESSON_APPLY_FAILED.format(
+            feedback = t(
+                "LESSON_APPLY_FAILED",
+                user_id=user_id,
                 feedback=result.feedback_ru,
                 corrected=corrected,
             )
     else:
         session.setdefault("scores", {})["last_apply"] = text[:500]
-        feedback = error_message or texts.LESSON_APPLY_AI_UNAVAILABLE
+        feedback = error_message or t("LESSON_APPLY_AI_UNAVAILABLE", user_id=user_id)
         save_session(user_id, KIND_LESSON, session)
 
     await update.message.reply_text(feedback)
