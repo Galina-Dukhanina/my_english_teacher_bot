@@ -255,6 +255,14 @@ async def _finish_setup(message, user_id: int, session: dict):
     )
     log_event(user_id, "premium_setup_complete_ui")
 
+    from bot.handlers.diagnostic import diagnostic_keyboard, needs_diagnostic
+
+    if needs_diagnostic(user_id):
+        await message.reply_text(
+            texts.DIAG_AFTER_SETUP,
+            reply_markup=diagnostic_keyboard(),
+        )
+
 
 def premium_setup_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(

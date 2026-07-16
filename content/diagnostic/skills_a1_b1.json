@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "questions": [
+    {
+      "skill": "grammar",
+      "weight": 1,
+      "text": "She ___ coffee every morning.",
+      "options": ["drink", "drinks", "drinking", "drank"],
+      "correct": 1
+    },
+    {
+      "skill": "grammar",
+      "weight": 2,
+      "text": "If I ___ more time, I would learn Spanish.",
+      "options": ["have", "had", "will have", "have had"],
+      "correct": 1
+    },
+    {
+      "skill": "vocabulary",
+      "weight": 1,
+      "text": "What is the opposite of «expensive»?",
+      "options": ["cheap", "heavy", "quick", "loud"],
+      "correct": 0
+    },
+    {
+      "skill": "vocabulary",
+      "weight": 2,
+      "text": "Choose the best word: «We need to ___ a decision by Friday.»",
+      "options": ["do", "make", "take", "have"],
+      "correct": 1
+    },
+    {
+      "skill": "reading",
+      "weight": 1,
+      "passage": "Tom works in a café. He starts at 8 a.m. and finishes at 4 p.m.",
+      "text": "When does Tom finish work?",
+      "options": ["8 a.m.", "4 p.m.", "8 p.m.", "At noon"],
+      "correct": 1
+    },
+    {
+      "skill": "reading",
+      "weight": 2,
+      "passage": "The meeting was moved because the client missed the train. It will happen on Thursday instead of Wednesday.",
+      "text": "Why was the meeting moved?",
+      "options": [
+        "The office was closed",
+        "The client was late",
+        "Thursday is better",
+        "The train was early"
+      ],
+      "correct": 1
+    },
+    {
+      "skill": "listening",
+      "weight": 1,
+      "passage": "🎧 Text script:\nA: Excuse me, where is the subway?\nB: Go straight and turn left at the bank.",
+      "text": "Where should you turn?",
+      "options": ["Right at the bank", "Left at the bank", "At the café", "At the hotel"],
+      "correct": 1
+    },
+    {
+      "skill": "listening",
+      "weight": 2,
+      "passage": "🎧 Text script:\nA: I'd like to return this jacket. I have the receipt.\nB: Sure, would you prefer a refund or store credit?",
+      "text": "What does the customer want?",
+      "options": ["Buy a jacket", "Return a jacket", "Exchange a receipt", "Get a discount"],
+      "correct": 1
+    },
+    {
+      "skill": "writing",
+      "weight": 1,
+      "text": "Which sentence is correct?",
+      "options": [
+        "He don't like tea.",
+        "He doesn't like tea.",
+        "He not likes tea.",
+        "He doesn't likes tea."
+      ],
+      "correct": 1
+    },
+    {
+      "skill": "writing",
+      "weight": 2,
+      "text": "Best formal closing for an email:",
+      "options": ["See ya!", "Best regards,", "Yo!", "Hugs,"],
+      "correct": 1
+    },
+    {
+      "skill": "speaking",
+      "weight": 1,
+      "text": "Best reply: «How are you?»",
+      "options": ["I'm fine, thanks.", "I am 30 years.", "At 5 o'clock.", "Blue."],
+      "correct": 0
+    },
+    {
+      "skill": "speaking",
+      "weight": 2,
+      "text": "Best phrase to ask someone to repeat:",
+      "options": [
+        "Shut up.",
+        "Could you say that again, please?",
+        "You are wrong.",
+        "Speak faster now."
+      ],
+      "correct": 1
+    }
+  ]
+}

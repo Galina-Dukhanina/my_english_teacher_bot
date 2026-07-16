@@ -474,6 +474,35 @@ PREMIUM_ACTIVE_READY = (
     "⭐ Premium до {until}\n\n"
     "Программа настроена. Ежедневные уроки — в следующих обновлениях."
 )
+PREMIUM_ACTIVE_NEED_DIAG = (
+    "⭐ Premium до {until}\n\n"
+    "Профиль настроен. Осталось пройти короткую диагностику навыков (~5 мин)."
+)
+
+BTN_DIAGNOSTIC_START = "📊 Пройти диагностику"
+DIAG_INTRO = (
+    "Диагностика из 12 вопросов — определим сильные и слабые навыки.\n"
+    "Grammar, Vocabulary, Reading, Listening, Writing, Speaking."
+)
+DIAG_QUESTION = "Вопрос {n} из {total}"
+DIAG_CORRECT = "✅ Верно!"
+DIAG_WRONG = "❌ Правильный ответ: {answer}"
+DIAG_RESULT = "Готово! Твой профиль навыков:\n\n{profile}"
+DIAG_AFTER_SETUP = "Можно сразу пройти диагностику — так точнее подберём программу."
+DIAG_NOT_PREMIUM = "Диагностика доступна в Premium. /premium"
+DIAG_SETUP_REQUIRED = "Сначала настрой программу: /premium"
+DIAG_ALREADY_DONE = "Диагностика уже пройдена. Повтор будет позже."
+DIAG_UNAVAILABLE = "Диагностика сейчас недоступна."
+DIAG_EXPIRED = "Диагностика прервалась. Начни заново: /premium"
+
+DIAG_SKILL_LABELS = {
+    "grammar": "Grammar",
+    "vocabulary": "Vocabulary",
+    "reading": "Reading",
+    "listening": "Listening",
+    "writing": "Writing",
+    "speaking": "Speaking",
+}
 
 BTN_PREMIUM_SETUP = "📋 Настроить программу"
 BTN_PREMIUM_SKIP = "Пропустить"

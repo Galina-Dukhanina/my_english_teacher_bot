@@ -19,6 +19,7 @@ from bot.services.subscription import is_premium, grant_premium
 from bot.services.payments import PaymentRequest, get_payment_provider
 from bot.services.profile_service import profile_service
 from bot.handlers.premium_onboarding import premium_setup_keyboard
+from bot.handlers.diagnostic import diagnostic_keyboard, needs_diagnostic
 from database.db import get_user, log_event
 
 logger = logging.getLogger(__name__)
@@ -64,10 +65,18 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=premium_setup_keyboard(),
             )
         else:
-            await update.message.reply_text(
-                texts.PREMIUM_ACTIVE_READY.format(until=until),
-                reply_markup=keyboards.main_keyboard(),
-            )
+            text = texts.PREMIUM_ACTIVE_READY.format(until=until)
+            if needs_diagnostic(user_id):
+                text = texts.PREMIUM_ACTIVE_NEED_DIAG.format(until=until)
+                await update.message.reply_text(
+                    text,
+                    reply_markup=diagnostic_keyboard(),
+                )
+            else:
+                await update.message.reply_text(
+                    text,
+                    reply_markup=keyboards.main_keyboard(),
+                )
         return
 
     if not PREMIUM_SALES_ENABLED:
@@ -99,9 +108,15 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
                     reply_markup=premium_setup_keyboard(),
                 )
             else:
-                await query.edit_message_text(
-                    texts.PREMIUM_ACTIVE_READY.format(until=until)
-                )
+                if needs_diagnostic(query.from_user.id):
+                    await query.edit_message_text(
+                        texts.PREMIUM_ACTIVE_NEED_DIAG.format(until=until),
+                        reply_markup=diagnostic_keyboard(),
+                    )
+                else:
+                    await query.edit_message_text(
+                        texts.PREMIUM_ACTIVE_READY.format(until=until)
+                    )
             return
         if not PREMIUM_SALES_ENABLED:
             await query.edit_message_text(texts.PREMIUM_COMING_SOON)
