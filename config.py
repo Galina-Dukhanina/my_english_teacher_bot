@@ -18,6 +18,10 @@ FREE_LIMIT_MESSAGES = int(os.getenv("FREE_LIMIT_MESSAGES", "15"))
 FREE_LIMIT_WORDS_SESSIONS = int(os.getenv("FREE_LIMIT_WORDS_SESSIONS", "1"))
 FREE_LIMIT_GRAMMAR_EXERCISES = int(os.getenv("FREE_LIMIT_GRAMMAR_EXERCISES", "1"))
 
+# === Лимиты Premium (listening/voice — этапы 13–14) ===
+PREMIUM_LIMIT_LISTENING = int(os.getenv("PREMIUM_LIMIT_LISTENING", "5"))
+PREMIUM_LIMIT_VOICE = int(os.getenv("PREMIUM_LIMIT_VOICE", "2"))
+
 # === Платежи ===
 PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "manual")  # manual | yookassa
 PREMIUM_PRICE_MONTH = float(os.getenv("PREMIUM_PRICE_MONTH", "299"))

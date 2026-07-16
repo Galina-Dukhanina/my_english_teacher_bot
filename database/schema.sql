@@ -146,3 +146,146 @@ CREATE TABLE IF NOT EXISTS payments (
     paid_at             TEXT,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+-- === Premium learning (MVP) ===
+
+CREATE TABLE IF NOT EXISTS learning_profiles (
+    user_id             INTEGER PRIMARY KEY,
+    cefr_level          TEXT,
+    display_level       TEXT,
+    goal                TEXT,
+    exam_type           TEXT,
+    exam_date           TEXT,
+    exam_current_score  REAL,
+    exam_target_score   REAL,
+    weak_skill          TEXT,
+    daily_minutes       INTEGER DEFAULT 15,
+    interests_json      TEXT,
+    profession          TEXT,
+    ui_language         TEXT DEFAULT 'ru',
+    premium_setup_done  INTEGER DEFAULT 0,
+    updated_at          TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS skill_profiles (
+    user_id       INTEGER PRIMARY KEY,
+    grammar       TEXT,
+    vocabulary    TEXT,
+    reading       TEXT,
+    listening     TEXT,
+    writing       TEXT,
+    speaking      TEXT,
+    diagnostic_at TEXT,
+    source        TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_modules (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    goal          TEXT NOT NULL,
+    cefr_level    TEXT NOT NULL,
+    stage         INTEGER DEFAULT 1,
+    week_number   INTEGER DEFAULT 1,
+    sort_order    INTEGER DEFAULT 0,
+    title         TEXT NOT NULL,
+    outcome_ru    TEXT,
+    core_ratio    REAL DEFAULT 0.7,
+    target_ratio  REAL DEFAULT 0.3,
+    is_active     INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_lessons (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    module_id         INTEGER NOT NULL,
+    day_number        INTEGER NOT NULL,
+    title             TEXT NOT NULL,
+    estimated_minutes INTEGER DEFAULT 15,
+    is_active         INTEGER DEFAULT 1,
+    FOREIGN KEY (module_id) REFERENCES curriculum_modules(id)
+);
+
+CREATE TABLE IF NOT EXISTS lesson_steps (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    lesson_id    INTEGER NOT NULL,
+    sort_order   INTEGER NOT NULL,
+    step_type    TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    FOREIGN KEY (lesson_id) REFERENCES curriculum_lessons(id)
+);
+
+CREATE TABLE IF NOT EXISTS content_assets (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug             TEXT UNIQUE NOT NULL,
+    kind             TEXT NOT NULL,
+    path             TEXT,
+    telegram_file_id TEXT,
+    meta_json        TEXT,
+    created_at       TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS user_module_progress (
+    user_id          INTEGER NOT NULL,
+    module_id        INTEGER NOT NULL,
+    status           TEXT DEFAULT 'not_started',
+    started_at       TEXT,
+    completed_at     TEXT,
+    week_check_score REAL,
+    PRIMARY KEY (user_id, module_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (module_id) REFERENCES curriculum_modules(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_lesson_progress (
+    user_id           INTEGER NOT NULL,
+    lesson_id         INTEGER NOT NULL,
+    status            TEXT DEFAULT 'not_started',
+    current_step_id   INTEGER,
+    started_at        TEXT,
+    completed_at      TEXT,
+    score_summary_json TEXT,
+    PRIMARY KEY (user_id, lesson_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (lesson_id) REFERENCES curriculum_lessons(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_learning_items (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id          INTEGER NOT NULL,
+    item_type        TEXT NOT NULL,
+    ref_id           TEXT NOT NULL,
+    content_json     TEXT,
+    status           TEXT DEFAULT 'new',
+    ease_factor      REAL DEFAULT 2.5,
+    interval_days    INTEGER DEFAULT 1,
+    next_review_at   TEXT,
+    correct_streak   INTEGER DEFAULT 0,
+    error_count      INTEGER DEFAULT 0,
+    last_reviewed_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_learning_items_review
+    ON user_learning_items(user_id, next_review_at);
+
+CREATE TABLE IF NOT EXISTS exercise_attempts (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id        INTEGER NOT NULL,
+    lesson_id      INTEGER,
+    lesson_step_id INTEGER,
+    answer_text    TEXT,
+    result_json    TEXT,
+    score          REAL,
+    created_at     TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS daily_phrases_log (
+    user_id    INTEGER NOT NULL,
+    phrase_date TEXT NOT NULL,
+    phrase_id  TEXT NOT NULL,
+    module_id  INTEGER,
+    shown_at   TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, phrase_date),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);

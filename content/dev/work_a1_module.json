@@ -1,0 +1,73 @@
+{
+  "module": {
+    "goal": "work",
+    "cefr_level": "A1",
+    "stage": 1,
+    "week_number": 1,
+    "sort_order": 0,
+    "title": "Introduce yourself at work",
+    "outcome_ru": "Представиться и назвать должность",
+    "core_ratio": 0.7,
+    "target_ratio": 0.3
+  },
+  "lessons": [
+    {
+      "day_number": 1,
+      "title": "Day 1: My name and job",
+      "estimated_minutes": 15,
+      "steps": [
+        {
+          "sort_order": 1,
+          "step_type": "phrase",
+          "payload": {
+            "phrase_en": "My name is … and I work as a …",
+            "phrase_ru": "Меня зовут …, я работаю …",
+            "phrase_id": "work_a1_d1_phrase"
+          }
+        },
+        {
+          "sort_order": 2,
+          "step_type": "explain",
+          "payload": {
+            "title_ru": "Глагол work as",
+            "body_ru": "После work as мы называем профессию: I work as a designer."
+          }
+        },
+        {
+          "sort_order": 3,
+          "step_type": "exercise",
+          "payload": {
+            "format": "mcq",
+            "question": "I work ___ a manager.",
+            "options": ["as", "is", "at", "on"],
+            "correct": 0
+          }
+        },
+        {
+          "sort_order": 4,
+          "step_type": "listen",
+          "payload": {
+            "asset_slug": "work_a1_d1_listen_intro",
+            "note": "deferred — этап 13"
+          }
+        },
+        {
+          "sort_order": 5,
+          "step_type": "apply",
+          "payload": {
+            "prompt_ru": "Напиши 1–2 предложения: как тебя зовут и кем ты работаешь.",
+            "min_words": 5
+          }
+        },
+        {
+          "sort_order": 6,
+          "step_type": "voice",
+          "payload": {
+            "prompt_ru": "Запиши голосом то же представление.",
+            "note": "deferred — этап 14"
+          }
+        }
+      ]
+    }
+  ]
+}
