@@ -486,6 +486,23 @@ def get_users_for_reminders():
     return [dict(r) for r in rows]
 
 
+def get_premium_users_for_daily_phrase():
+    """Premium с настроенным профилем — для фразы дня."""
+    conn = get_connection()
+    rows = conn.execute(
+        """
+        SELECT u.user_id, u.timezone, u.reminder_time, u.reminder_enabled
+        FROM users u
+        INNER JOIN learning_profiles lp ON lp.user_id = u.user_id
+        WHERE u.is_premium = 1
+          AND u.onboarding_done = 1
+          AND lp.premium_setup_done = 1
+        """
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def reminder_sent_today(user_id, date_str):
     """True, если напоминание уже отправляли сегодня (date_str — YYYY-MM-DD)."""
     conn = get_connection()

@@ -4,12 +4,19 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from bot.services.daily_phrase_delivery import send_daily_phrases
 from bot.services.reminders import send_reminders
 from database.db import expire_premium_users
 
 logger = logging.getLogger(__name__)
 
 _scheduler: AsyncIOScheduler | None = None
+
+
+async def _daily_phrase_job(app):
+    count = await send_daily_phrases(app)
+    if count:
+        logger.info(f"Отправлено фраз дня: {count}")
 
 
 async def _reminders_job(app):
@@ -47,6 +54,14 @@ def start_scheduler(app):
         replace_existing=True,
     )
     _scheduler.add_job(
+        _daily_phrase_job,
+        "interval",
+        minutes=1,
+        args=[app],
+        id="send_daily_phrases",
+        replace_existing=True,
+    )
+    _scheduler.add_job(
         _expire_premium_job,
         "cron",
         hour=3,
@@ -56,7 +71,7 @@ def start_scheduler(app):
         replace_existing=True,
     )
     _scheduler.start()
-    logger.info("Планировщик напоминаний запущен (интервал 1 мин)")
+    logger.info("Планировщик запущен (напоминания и фраза дня, интервал 1 мин)")
     return _scheduler
 
 

@@ -20,7 +20,7 @@ from bot.services.payments import PaymentRequest, get_payment_provider
 from bot.services.profile_service import profile_service
 from bot.handlers.premium_onboarding import premium_setup_keyboard
 from bot.handlers.diagnostic import diagnostic_keyboard, needs_diagnostic
-from bot.handlers.premium_lesson import premium_lesson_keyboard
+from bot.handlers.daily_phrase import premium_menu_keyboard
 from database.db import get_user, log_event
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ async def _send_premium_ready(message, user_id: int, until: str):
             reply_markup=diagnostic_keyboard(),
         )
         return
-    markup = premium_lesson_keyboard(user_id)
+    markup = premium_menu_keyboard(user_id)
     await message.reply_text(
         texts.PREMIUM_ACTIVE_READY.format(until=until),
         reply_markup=markup or keyboards.main_keyboard(),
@@ -118,7 +118,7 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
                         reply_markup=diagnostic_keyboard(),
                     )
                 else:
-                    markup = premium_lesson_keyboard(query.from_user.id)
+                    markup = premium_menu_keyboard(query.from_user.id)
                     await query.edit_message_text(
                         texts.PREMIUM_ACTIVE_READY.format(until=until),
                         reply_markup=markup,

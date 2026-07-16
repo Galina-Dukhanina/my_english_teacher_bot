@@ -472,7 +472,18 @@ PREMIUM_ACTIVE_SETUP = (
 )
 PREMIUM_ACTIVE_READY = (
     "⭐ Premium до {until}\n\n"
-    "Программа настроена. Начни урок дня или продолжи начатый."
+    "Программа настроена. Начни урок дня или посмотри фразу дня."
+)
+
+BTN_DAILY_PHRASE = "💬 Фраза дня"
+DAILY_PHRASE_MESSAGE = (
+    "💬 Фраза дня\n\n"
+    "{phrase_en}\n\n"
+    "{phrase_ru}\n\n"
+    "📘 {module} · {lesson} (день {day})"
+)
+DAILY_PHRASE_UNAVAILABLE = (
+    "Фраза дня доступна после настройки Premium-программы. /premium"
 )
 
 BTN_LESSON_START = "📖 Урок дня"
