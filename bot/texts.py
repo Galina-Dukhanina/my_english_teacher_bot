@@ -457,13 +457,86 @@ PREMIUM_BTN_YEAR = "Год — {price} ₽"
 PREMIUM_BTN_PAY = "💳 Оплатить"
 PREMIUM_PAY_LINK = "Оплата {plan} — {amount} ₽.\nНажми кнопку ниже:"
 PREMIUM_PAY_ERROR = "Не удалось создать платёж. Попробуй позже или напиши /feedback."
-PREMIUM_ACTIVE = "У тебя уже активен Premium до {until}."
 PREMIUM_ALREADY = "Premium уже активен."
 PREMIUM_GRANTED = "Premium выдан user {user_id} на {days} дн."
 PREMIUM_ACTIVATED_USER = (
-    "🎉 Premium активирован на {days} дней! "
-    "Ты в тестовой группе — функции будем добавлять постепенно."
+    "🎉 Premium активирован на {days} дней!\n\n"
+    "Следующий шаг — настроить персональную программу. "
+    "Нажми кнопку ниже или открой /premium"
 )
+PREMIUM_ACTIVE = "У тебя активен Premium до {until}."
+PREMIUM_ACTIVE_SETUP = (
+    "⭐ Premium до {until}\n\n"
+    "Чтобы начать персональную программу, настрой профиль — "
+    "это займёт пару минут."
+)
+PREMIUM_ACTIVE_READY = (
+    "⭐ Premium до {until}\n\n"
+    "Программа настроена. Ежедневные уроки — в следующих обновлениях."
+)
+
+BTN_PREMIUM_SETUP = "📋 Настроить программу"
+BTN_PREMIUM_SKIP = "Пропустить"
+
+PREMIUM_SETUP_INTRO = (
+    "Настроим программу под тебя.\n"
+    "Отвечай по одному шагу — можно вернуться позже через /premium."
+)
+PREMIUM_SETUP_PROFESSION = (
+    "Кем ты работаешь или чем занимаешься?\n"
+    "Напиши текстом или нажми «Пропустить»."
+)
+PREMIUM_SETUP_PROFESSION_TOO_LONG = "Слишком длинно — до 120 символов."
+PREMIUM_SETUP_SAVED_PROFESSION = "Записала: {value}"
+PREMIUM_SETUP_MINUTES = "Сколько минут в день готов(а) заниматься?"
+BTN_PREMIUM_MINUTES = {
+    "5": "5 минут",
+    "10": "10 минут",
+    "15": "15 минут",
+    "20": "20 минут",
+}
+PREMIUM_SETUP_EXAM_TYPE = "К какому экзамену готовишься?"
+BTN_EXAM_TYPES = {
+    "toefl": "TOEFL",
+    "det": "Duolingo English Test",
+    "other": "Другой",
+}
+PREMIUM_SETUP_EXAM_DATE = (
+    "Когда экзамен?\n"
+    "Напиши дату или месяц (например: декабрь 2026) — или «Пропустить»."
+)
+PREMIUM_SETUP_EXAM_DATE_TOO_LONG = "Слишком длинно — до 80 символов."
+PREMIUM_SETUP_SAVED_EXAM_DATE = "Дата экзамена: {value}"
+PREMIUM_SETUP_WEAK_SKILL = "Какой навык хочешь прокачать в первую очередь?"
+BTN_WEAK_SKILLS = {
+    "grammar": "Грамматика",
+    "vocabulary": "Лексика",
+    "reading": "Чтение",
+    "listening": "Аудирование",
+    "writing": "Письмо",
+    "speaking": "Говорение",
+}
+PREMIUM_SETUP_INTERESTS = "Что тебе интересно? (для подбора примеров)"
+BTN_PREMIUM_INTERESTS = {
+    "movies": "Фильмы и сериалы",
+    "books": "Книги",
+    "tech": "Технологии",
+    "travel": "Путешествия",
+    "psychology": "Психология",
+    "news": "Новости",
+    "daily": "Повседневная жизнь",
+}
+PREMIUM_SETUP_DONE = (
+    "✅ Программа настроена!\n\n"
+    "Цель: {goal}\n"
+    "Время в день: {minutes} мин\n\n"
+    "Ежедневные уроки подключим на следующем этапе."
+)
+PREMIUM_SETUP_NOT_PREMIUM = "Premium не активен. Подробнее: /premium"
+PREMIUM_SETUP_ALREADY = "Профиль уже настроен. Изменить цель и уровень: /settings"
+PREMIUM_SETUP_EXPIRED = "Настройка прервалась. Начни заново: /premium"
+PREMIUM_SETUP_USE_BUTTONS = "На этом шаге выбери вариант кнопкой или напиши текст, если бот просит."
+
 PREMIUM_WORD_SAVED = (
     "✅ Слово сохранено в словарь — бот напомнит повторить его в режиме "
     "«Повторить слова»."

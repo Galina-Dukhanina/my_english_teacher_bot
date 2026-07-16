@@ -17,6 +17,8 @@ from config import (
 from bot import texts, keyboards
 from bot.services.subscription import is_premium, grant_premium
 from bot.services.payments import PaymentRequest, get_payment_provider
+from bot.services.profile_service import profile_service
+from bot.handlers.premium_onboarding import premium_setup_keyboard
 from database.db import get_user, log_event
 
 logger = logging.getLogger(__name__)
@@ -56,10 +58,16 @@ async def premium_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_event(user_id, "premium_view")
     if is_premium(user_id):
         until = user.get("premium_until") or "без срока"
-        await update.message.reply_text(
-            texts.PREMIUM_ACTIVE.format(until=until),
-            reply_markup=keyboards.main_keyboard(),
-        )
+        if profile_service.needs_premium_setup(user_id):
+            await update.message.reply_text(
+                texts.PREMIUM_ACTIVE_SETUP.format(until=until),
+                reply_markup=premium_setup_keyboard(),
+            )
+        else:
+            await update.message.reply_text(
+                texts.PREMIUM_ACTIVE_READY.format(until=until),
+                reply_markup=keyboards.main_keyboard(),
+            )
         return
 
     if not PREMIUM_SALES_ENABLED:
@@ -84,11 +92,16 @@ async def handle_premium_callback(update: Update, context: ContextTypes.DEFAULT_
         await query.answer()
         user = get_user(query.from_user.id)
         if user and is_premium(query.from_user.id):
-            await query.edit_message_text(
-                texts.PREMIUM_ACTIVE.format(
-                    until=user.get("premium_until") or "без срока"
+            until = user.get("premium_until") or "без срока"
+            if profile_service.needs_premium_setup(query.from_user.id):
+                await query.edit_message_text(
+                    texts.PREMIUM_ACTIVE_SETUP.format(until=until),
+                    reply_markup=premium_setup_keyboard(),
                 )
-            )
+            else:
+                await query.edit_message_text(
+                    texts.PREMIUM_ACTIVE_READY.format(until=until)
+                )
             return
         if not PREMIUM_SALES_ENABLED:
             await query.edit_message_text(texts.PREMIUM_COMING_SOON)
@@ -217,6 +230,7 @@ async def grant_premium_command(update: Update, context: ContextTypes.DEFAULT_TY
             await context.bot.send_message(
                 chat_id=target_id,
                 text=texts.PREMIUM_ACTIVATED_USER.format(days=days),
+                reply_markup=premium_setup_keyboard(),
             )
         except Exception as e:
             logger.error(f"Не удалось уведомить user {target_id}: {e}")

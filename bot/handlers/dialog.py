@@ -55,6 +55,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    # --- Premium setup (текст profession / exam date) ---
+    from bot.handlers.premium_onboarding import handle_setup_text
+
+    if await handle_setup_text(update, context):
+        return
+
     # --- Нажата кнопка клавиатуры? ---
     is_button = text in texts.MENU_BUTTONS
 
